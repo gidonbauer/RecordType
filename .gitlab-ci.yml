@@ -1,0 +1,63 @@
+image: ubuntu:latest
+
+.pipeline_triggers:
+  only:
+   - main
+   - merge_requests
+   - web
+
+stages:
+  - build
+  - test
+
+build-gcc:
+  stage: build
+  extends: .pipeline_triggers
+  script:
+    - apt-get update
+    - apt-get install g++ cmake make -y
+    - g++ --version
+    - cmake --version
+    - make --version
+    - cmake -Bbuild -DCMAKE_CXX_COMPILER=g++
+    - cd bin
+    - make
+
+build-clang:
+  stage: build
+  extends: .pipeline_triggers
+  script:
+    - apt-get update
+    - apt-get install clang cmake make -y
+    - clang++ --version
+    - cmake --version
+    - make --version
+    - cmake -Bbuild -DCMAKE_CXX_COMPILER=clang++
+    - cd bin
+    - make
+
+test-gcc:
+  stage: test
+  extends: .pipeline_triggers
+  script:
+    - apt-get update
+    - apt-get install g++ cmake make git -y
+    - g++ --version
+    - cmake --version
+    - make --version
+    - cmake -Bbuildtest -DBUILD_EXAMPLE=OFF -DBUILD_TEST=ON -DCMAKE_CXX_COMPILER=g++
+    - cd bin
+    - make tests
+
+test-clang:
+  stage: test
+  extends: .pipeline_triggers
+  script:
+    - apt-get update
+    - apt-get install clang cmake make git -y
+    - clang++ --version
+    - cmake --version
+    - make --version
+    - cmake -Bbuildtest -DBUILD_EXAMPLE=OFF -DBUILD_TEST=ON -DCMAKE_CXX_COMPILER=clang++
+    - cd bin
+    - make tests
