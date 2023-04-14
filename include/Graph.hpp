@@ -50,7 +50,7 @@ class Graph {
   };
 
  private:
-  std::vector<Node> nodes{};
+  std::vector<Node> m_nodes{};
 
  public:
   constexpr auto insert_node_edge(const RecordType<ActiveType>& to_insert_from,
@@ -73,7 +73,7 @@ class Graph {
     if (opt_idx.has_value()) {
       return false;
     }
-    nodes.emplace_back(to_insert.value(), to_insert.id(), to_insert.node_type());
+    m_nodes.emplace_back(to_insert.value(), to_insert.id(), to_insert.node_type());
     return true;
   }
 
@@ -84,7 +84,7 @@ class Graph {
       return false;
     }
 
-    Node& from_node = nodes[*opt_from_idx];
+    Node& from_node = m_nodes[*opt_from_idx];
     if (std::find(std::cbegin(from_node.adjacent_nodes),
                   std::cend(from_node.adjacent_nodes),
                   *opt_to_idx) != std::cend(from_node.adjacent_nodes)) {
@@ -96,8 +96,8 @@ class Graph {
   }
 
   [[nodiscard]] constexpr auto find_index(uint64_t id) const noexcept -> std::optional<size_t> {
-    for (size_t i = 0ul; i < nodes.size(); ++i) {
-      if (nodes[i].id == id) {
+    for (size_t i = 0ul; i < m_nodes.size(); ++i) {
+      if (m_nodes[i].id == id) {
         return i;
       }
     }
@@ -109,19 +109,19 @@ class Graph {
     if (!opt_idx.has_value()) {
       throw std::runtime_error("Node with id " + std::to_string(id) + " is not in graph.");
     }
-    return nodes[*opt_idx];
+    return m_nodes[*opt_idx];
   }
 
   [[nodiscard]] constexpr auto count_ops() const noexcept -> size_t {
     return std::accumulate(
-        std::cbegin(nodes), std::cend(nodes), 0ul, [](size_t count, const Node& node) {
+        std::cbegin(m_nodes), std::cend(m_nodes), 0ul, [](size_t count, const Node& node) {
           return count + is_op(node.node_type);
         });
   }
 
   [[nodiscard]] constexpr auto count_op(NodeType op) const noexcept -> size_t {
     return std::accumulate(
-        std::cbegin(nodes), std::cend(nodes), 0ul, [op](size_t count, const Node& node) {
+        std::cbegin(m_nodes), std::cend(m_nodes), 0ul, [op](size_t count, const Node& node) {
           return count + (node.node_type == op);
         });
   }
@@ -137,7 +137,7 @@ class Graph {
 
     // Print all nodes and how they should be represented
     // NOLINTBEGIN(cppcoreguidelines-avoid-goto)
-    for (const auto& node : nodes) {
+    for (const auto& node : m_nodes) {
       static_assert(
           static_cast<int>(NodeType::NODE_TYPE_COUNT) == 7,
           "Number of node types changed, it might be necessary to adjust the graph output.");
@@ -184,7 +184,7 @@ class Graph {
     // NOLINTEND(cppcoreguidelines-avoid-goto)
 
     // Print all edges
-    for (const auto& node : nodes) {
+    for (const auto& node : m_nodes) {
       for (const auto& adj_node_idx : node.adjacent_nodes) {
         if (!opt.unique_literals) {
           if (node.node_type == NodeType::LITERAL) {
@@ -193,14 +193,14 @@ class Graph {
             out << "    node_" << node.id;
           }
           out << " -> ";
-          if (nodes[adj_node_idx].node_type == NodeType::LITERAL) {
-            out << "literal_" << nodes[adj_node_idx].value;
+          if (m_nodes[adj_node_idx].node_type == NodeType::LITERAL) {
+            out << "literal_" << m_nodes[adj_node_idx].value;
           } else {
-            out << "node_" << nodes[adj_node_idx].id;
+            out << "node_" << m_nodes[adj_node_idx].id;
           }
           out << ";\n";
         } else {
-          out << "    node_" << node.id << " -> node_" << nodes[adj_node_idx].id << ";\n";
+          out << "    node_" << node.id << " -> node_" << m_nodes[adj_node_idx].id << ";\n";
         }
       }
     }
