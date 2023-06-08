@@ -16,7 +16,7 @@
 
 namespace RT {
 
-template <typename ActiveType>
+template <typename PassiveType>
 class RecordType;
 
 struct GraphToDotOptions {
@@ -26,18 +26,18 @@ struct GraphToDotOptions {
   bool use_op_symbols       = false;  // Operatrion like ADD and MUL are shown as Symbols
 };
 
-template <typename ActiveType>
+template <typename PassiveType>
 class Graph {
  public:
   struct Node {
-    ActiveType value;
+    PassiveType value;
     uint64_t id;
     NodeType node_type;
     std::vector<size_t> adjacent_nodes{};
 
     Node()
-        : Node(static_cast<ActiveType>(0), static_cast<uint64_t>(-1), NodeType::LITERAL) {}
-    Node(ActiveType value_, uint64_t id_, NodeType node_type_)
+        : Node(static_cast<PassiveType>(0), static_cast<uint64_t>(-1), NodeType::LITERAL) {}
+    Node(PassiveType value_, uint64_t id_, NodeType node_type_)
         : value(std::move(value_)),
           id(id_),
           node_type(node_type_) {}
@@ -53,8 +53,8 @@ class Graph {
   std::vector<Node> m_nodes{};
 
  public:
-  constexpr auto insert_node_edge(const RecordType<ActiveType>& to_insert_from,
-                                  const RecordType<ActiveType>& to_insert_to) noexcept -> int {
+  constexpr auto insert_node_edge(const RecordType<PassiveType>& to_insert_from,
+                                  const RecordType<PassiveType>& to_insert_to) noexcept -> int {
     int res = 0;
     if (insert_node(to_insert_from)) {
       res |= INSERT_FROM_NODE;
@@ -68,7 +68,7 @@ class Graph {
     return res;
   }
 
-  constexpr auto insert_node(const RecordType<ActiveType>& to_insert) noexcept -> bool {
+  constexpr auto insert_node(const RecordType<PassiveType>& to_insert) noexcept -> bool {
     const auto opt_idx = find_index(to_insert.id());
     if (opt_idx.has_value()) {
       return false;
