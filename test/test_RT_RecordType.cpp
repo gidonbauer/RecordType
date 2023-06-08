@@ -12,8 +12,6 @@ TEST(test_RT_RecordType, Constructor) {
   RT::RecordType rt2(-42.0f);
   EXPECT_FLOAT_EQ(rt2.value(), -42.0f);
   EXPECT_EQ(rt2.node_type(), RT::NodeType::VAR);
-
-  EXPECT_NE(rt1.id(), rt2.id());
 }
 
 TEST(test_RT_RecordType, Assign) {
