@@ -32,6 +32,22 @@ TEST(test_RT_RecordType, Assign) {
   }
 
   {
+    RT::RecordType rt(42);
+    const auto old_value     = rt.value();
+    const auto old_id        = rt.id();
+    const auto old_node_type = rt.node_type();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-move"
+    rt = std::move(rt);
+#pragma GCC diagnostic pop
+
+    EXPECT_EQ(old_value, rt.value());
+    EXPECT_NE(old_id, rt.id());
+    EXPECT_EQ(old_node_type, rt.node_type());
+  }
+
+  {
     RT::RecordType rt1(42);
     RT::RecordType rt2(12);
     RT::RecordType rt3(0);

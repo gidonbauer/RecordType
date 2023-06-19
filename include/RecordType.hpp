@@ -65,20 +65,25 @@ class RecordType {
   // Copy assign operator
   constexpr auto operator=(const RecordType<PassiveType>& other) noexcept
       -> RecordType<PassiveType>& {
+    // Keep copy of other id in case of self assignment
+    const auto other_id = other.id();
+
     m_value     = other.m_value;
     m_id        = get_unique_id<PassiveType>();
     m_node_type = NodeType::VAR;
-    s_graph.add_dependencies(other.id());
+    s_graph.add_dependencies(other_id);
     s_graph.add_operation(m_id, m_node_type, m_value);
     return *this;
   }
 
   // Move assign operator
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
+    const auto other_id = other.id();
+
     m_value     = std::move(other.m_value);
     m_id        = get_unique_id<PassiveType>();
     m_node_type = NodeType::VAR;
-    s_graph.add_dependencies(other.id());
+    s_graph.add_dependencies(other_id);
     s_graph.add_operation(m_id, m_node_type, m_value);
     return *this;
   }
