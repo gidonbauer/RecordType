@@ -19,6 +19,9 @@ struct GraphToDotOptions {
   bool use_op_symbols       = false;  // Operatrion like ADD and MUL are shown as Symbols
 };
 
+template <typename T>
+concept RecordTypeId = std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, uint64_t>;
+
 // TODO: Is the graph thread safe? We only add nodes and edges and never remove any.
 template <typename PassiveType>
 class Graph {
@@ -35,8 +38,7 @@ class Graph {
   constexpr ~Graph() noexcept                               = default;
 
   // -----------------------------------------------------------------------------------------------
-  template <typename... IDS>
-  requires(std::is_same_v<IDS, uint64_t>, ...)
+  template <RecordTypeId... IDS>
   constexpr void add_dependencies(IDS&&... ids) noexcept {
     if constexpr (sizeof...(ids) == 0) {
       return;
