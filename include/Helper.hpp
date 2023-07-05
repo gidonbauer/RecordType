@@ -27,7 +27,7 @@ template <typename T>
     switch (status) {
       case -1:
         throw std::runtime_error(
-            "Demagleing failed with status -1: A memory allocation failiure occurred.");
+            "Demagleing failed with status -1: A memory allocation failure occurred.");
       case -2:
         throw std::runtime_error("Demagleing failed with status -2: mangled_name is not a valid "
                                  "name under the C++ ABI mangling rules.");
@@ -35,14 +35,17 @@ template <typename T>
         throw std::runtime_error(
             "Demagleing failed with status -3: One of the arguments is invalid.");
       default:
-        throw std::runtime_error("Demagleing failed with unknown status " + std::to_string(status) +
-                                 ".");
+        throw std::runtime_error("Demagleing failed with unknown status "s +
+                                 std::to_string(status) + "."s);
     }
   }
 
   std::string name(name_cstr);
   std::free(name_cstr);  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc)
 
+  if (std::is_volatile_v<std::remove_reference_t<T>>) {
+    name += " volatile"s;
+  }
   if (std::is_const_v<std::remove_reference_t<T>>) {
     name += " const"s;
   }

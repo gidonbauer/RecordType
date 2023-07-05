@@ -70,6 +70,10 @@ TEST(test_RT_TypeTraits, TypeName) {
   EXPECT_EQ(RT::type_name<const int*>(), "int const*"s);
   EXPECT_EQ(RT::type_name<int const* const>(), "int const* const"s);
 
+  EXPECT_EQ(RT::type_name<volatile int*>(), "int volatile*"s);
+  EXPECT_EQ(RT::type_name<int volatile* volatile>(), "int volatile* volatile"s);
+  EXPECT_EQ(RT::type_name<int volatile* const volatile>(), "int volatile* volatile const"s);
+
   EXPECT_EQ(RT::type_name<int**>(), "int**"s);
   EXPECT_EQ(RT::type_name<const int**>(), "int const**"s);
   EXPECT_EQ(RT::type_name<const int** const>(), "int const** const"s);
