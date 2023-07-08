@@ -193,10 +193,36 @@ class RecordType {
     s_graph.add_operation(res.id(), res.node_type(), res.value());
     return res;
   }
+
+  [[nodiscard]] friend auto sin(const RecordType<PassiveType>& x) noexcept
+      -> RecordType<PassiveType> {
+    RecordType<PassiveType> res(static_cast<PassiveType>(std::sin(x.m_value)), NodeType::SIN);
+    s_graph.add_dependencies(x.id());
+    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    return res;
+  }
+
+  [[nodiscard]] friend auto cos(const RecordType<PassiveType>& x) noexcept
+      -> RecordType<PassiveType> {
+    RecordType<PassiveType> res(static_cast<PassiveType>(std::cos(x.m_value)), NodeType::COS);
+    s_graph.add_dependencies(x.id());
+    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    return res;
+  }
 #else
   [[noreturn]] friend auto sqrt(const RecordType<PassiveType>& /*x*/) noexcept
       -> RecordType<PassiveType> {
     RT_PANIC("Operation `sqrt` is not allowed becaue the macro `RT_ONLY_FUNDAMENTAL` is defined.");
+  }
+
+  [[noreturn]] friend auto sin(const RecordType<PassiveType>& /*x*/) noexcept
+      -> RecordType<PassiveType> {
+    RT_PANIC("Operation `sin` is not allowed becaue the macro `RT_ONLY_FUNDAMENTAL` is defined.");
+  }
+
+  [[noreturn]] friend auto cos(const RecordType<PassiveType>& /*x*/) noexcept
+      -> RecordType<PassiveType> {
+    RT_PANIC("Operation `cos` is not allowed becaue the macro `RT_ONLY_FUNDAMENTAL` is defined.");
   }
 #endif  // RT_ONLY_FUNDAMENTAL
 };
@@ -220,6 +246,18 @@ template <typename PassiveType>
 [[nodiscard]] auto sqrt(const RT::RecordType<PassiveType>& x) noexcept
     -> RT::RecordType<PassiveType> {
   return sqrt(x);
+}
+
+template <typename PassiveType>
+[[nodiscard]] auto sin(const RT::RecordType<PassiveType>& x) noexcept
+    -> RT::RecordType<PassiveType> {
+  return sin(x);
+}
+
+template <typename PassiveType>
+[[nodiscard]] auto cos(const RT::RecordType<PassiveType>& x) noexcept
+    -> RT::RecordType<PassiveType> {
+  return cos(x);
 }
 
 }  // namespace std

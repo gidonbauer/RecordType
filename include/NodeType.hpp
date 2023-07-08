@@ -15,18 +15,21 @@ enum class NodeType {
   INV,
   NEG,
   SQRT,
+  SIN,
+  COS,
   NODE_TYPE_COUNT,
 };
 
 [[nodiscard]] constexpr auto is_op(NodeType node_type) noexcept -> bool {
   // TODO: Are NodeType::INV and NodeType::NEG operations that we want to count?
-  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 7,
+  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
                 "Number of node types changed, are the new ones operations?");
-  return node_type == NodeType::ADD || node_type == NodeType::MUL || node_type == NodeType::SQRT;
+  return node_type == NodeType::ADD || node_type == NodeType::MUL || node_type == NodeType::SQRT ||
+         node_type == NodeType::SIN || node_type == NodeType::COS;
 }
 
 auto operator<<(std::ostream& out, NodeType node_type) noexcept -> std::ostream& {
-  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 7,
+  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
                 "Number of node types changed, add name to switch statement.");
   switch (node_type) {
     case NodeType::LITERAL:
@@ -49,6 +52,12 @@ auto operator<<(std::ostream& out, NodeType node_type) noexcept -> std::ostream&
       break;
     case NodeType::SQRT:
       out << "SQRT";
+      break;
+    case NodeType::SIN:
+      out << "SIN";
+      break;
+    case NodeType::COS:
+      out << "COS";
       break;
     default:
       RT_PANIC("Unknown NodeType: `" << static_cast<int>(node_type) << "`.");

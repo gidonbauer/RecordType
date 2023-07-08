@@ -13,6 +13,7 @@ set(executables
         example_subtraction
         example_dyn_matrix_inverse
         example_eigen_llt
+        example_AAD_112
 )
 
 foreach(exec ${executables})

@@ -352,6 +352,82 @@ TEST(test_RT_RecordType, Sqrt) {
   }
 }
 
+TEST(test_RT_RecordType, Sin) {
+  {
+    RT::RecordType rt1(std::numbers::pi / 2.0);
+    RT::RecordType rt2 = sin(rt1);
+
+    EXPECT_DOUBLE_EQ(rt2.value(), 1.0);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::SIN);
+  }
+
+  {
+    RT::RecordType rt1(0);
+    RT::RecordType rt2 = sin(rt1);
+
+    EXPECT_EQ(rt2.value(), 0);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::SIN);
+  }
+
+  {
+    RT::RecordType rt1(std::numbers::pi / 2.0);
+    RT::RecordType rt2 = std::sin(rt1);
+
+    EXPECT_DOUBLE_EQ(rt2.value(), 1.0);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::SIN);
+  }
+
+  {
+    RT::RecordType rt1(0);
+    RT::RecordType rt2 = std::sin(rt1);
+
+    EXPECT_EQ(rt2.value(), 0);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::SIN);
+  }
+}
+
+TEST(test_RT_RecordType, Cos) {
+  {
+    RT::RecordType rt1(std::numbers::pi / 2.0);
+    RT::RecordType rt2 = cos(rt1);
+
+    EXPECT_NEAR(rt2.value(), 0.0, 1e-16);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::COS);
+  }
+
+  {
+    RT::RecordType rt1(0);
+    RT::RecordType rt2 = cos(rt1);
+
+    EXPECT_EQ(rt2.value(), 1);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::COS);
+  }
+
+  {
+    RT::RecordType rt1(std::numbers::pi / 2.0);
+    RT::RecordType rt2 = std::cos(rt1);
+
+    EXPECT_NEAR(rt2.value(), 0.0, 1e-16);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::COS);
+  }
+
+  {
+    RT::RecordType rt1(0);
+    RT::RecordType rt2 = std::cos(rt1);
+
+    EXPECT_EQ(rt2.value(), 1);
+    EXPECT_NE(rt1.id(), rt2.id());
+    EXPECT_EQ(rt2.node_type(), RT::NodeType::COS);
+  }
+}
+
 TEST(test_RT_RecordType, Compare) {
   {
     RT::RecordType rt1(1);
