@@ -7,6 +7,10 @@
 auto main() -> int {
   using Type = RT::RecordType<double>;
   Type rt1   = 4.2;
+
+  auto graph = std::make_shared<RT::Graph<double>>();
+  rt1.register_graph(graph);
+
   Type rt2(rt1);
 
   RT_DEBUG_PRINT(rt1.value());
@@ -20,5 +24,5 @@ auto main() -> int {
   RT::GraphToDotOptions opt{
       .print_node_id = true,
   };
-  save_to_dot<Type>(__FILE__, opt);
+  save_to_dot(__FILE__, graph.get(), opt);
 }

@@ -44,11 +44,20 @@ auto main() -> int {
       {7.0, 8.0},
   };
 
+  auto graph = std::make_shared<RT::Graph<double>>();
+
+  std::for_each(std::cbegin(lhs), std::cend(lhs), [&](const auto& vec) {
+    std::for_each(std::begin(vec), std::end(vec), [&](auto& e) { e.register_graph(graph); });
+  });
+  std::for_each(std::cbegin(rhs), std::cend(rhs), [&](const auto& vec) {
+    std::for_each(std::begin(vec), std::end(vec), [&](auto& e) { e.register_graph(graph); });
+  });
+
   [[maybe_unused]] auto res = mat_mult(lhs, rhs);
 
   RT::GraphToDotOptions opt{
       .print_node_id  = true,
       .use_op_symbols = true,
   };
-  save_to_dot<Type>(__FILE__, opt);
+  save_to_dot(__FILE__, graph.get(), opt);
 }

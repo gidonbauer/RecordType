@@ -4,15 +4,15 @@ set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -O3)
 set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -O3)
 
 set(executables
-        # example_dot_product
-        # example_matrix_product
-        # example_eigen_dot_product
-        # example_eigen_matrix_product
-        # example_multiple_assign_bug
-        # example_division
-        # example_subtraction
-        # example_dyn_matrix_inverse
-        # example_eigen_llt
+        example_dot_product
+        example_matrix_product
+        example_eigen_dot_product
+        example_eigen_matrix_product
+        example_multiple_assign_bug
+        example_division
+        example_subtraction
+        example_dyn_matrix_inverse
+        example_eigen_llt
         example_AAD_112
 )
 

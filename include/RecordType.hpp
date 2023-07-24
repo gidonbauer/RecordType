@@ -90,7 +90,7 @@ class RecordType {
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
     const auto other_id = other.id();
 
-    m_graph     = std::exchange(other.m_graph, nullptr);
+    m_graph     = get_graph(*this, other);
     m_value     = std::move(other.m_value);
     m_node_type = NodeType::VAR;
     if (m_graph) {
@@ -168,26 +168,28 @@ class RecordType {
     return *this;
   }
 
-  [[nodiscard]] constexpr auto operator+(const RecordType<PassiveType>& rhs) const noexcept
+  [[nodiscard]] friend constexpr auto operator+(const RecordType<PassiveType>& lhs,
+                                                const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    RecordType<PassiveType> res(value() + rhs.value(), NodeType::ADD);
+    RecordType<PassiveType> res(lhs.value() + rhs.value(), NodeType::ADD);
 
-    auto graph = get_graph(*this, rhs);
+    auto graph = get_graph(lhs, rhs);
     if (graph) {
-      graph->add_dependencies(id(), rhs.id());
+      graph->add_dependencies(lhs.id(), rhs.id());
       res.m_id    = graph->add_operation(res.node_type(), res.value());
       res.m_graph = graph;
     }
     return res;
   }
 
-  [[nodiscard]] constexpr auto operator*(const RecordType<PassiveType>& rhs) const noexcept
+  [[nodiscard]] friend constexpr auto operator*(const RecordType<PassiveType>& lhs,
+                                                const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    RecordType<PassiveType> res(value() * rhs.value(), NodeType::MUL);
+    RecordType<PassiveType> res(lhs.value() * rhs.value(), NodeType::MUL);
 
-    auto graph = get_graph(*this, rhs);
+    auto graph = get_graph(lhs, rhs);
     if (graph) {
-      graph->add_dependencies(id(), rhs.id());
+      graph->add_dependencies(lhs.id(), rhs.id());
       res.m_id    = graph->add_operation(res.node_type(), res.value());
       res.m_graph = graph;
     }
@@ -209,9 +211,10 @@ class RecordType {
   }
 
   // TODO: This does not work for integer types because of `invert`
-  [[nodiscard]] constexpr auto operator/(const RecordType<PassiveType>& rhs) const noexcept
+  [[nodiscard]] friend constexpr auto operator/(const RecordType<PassiveType>& lhs,
+                                                const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    return *this * rhs.invert();
+    return lhs * rhs.invert();
   }
 
   // TODO: This does not work for unsigned integer types
@@ -229,9 +232,10 @@ class RecordType {
   }
 
   // TODO: This does not work for unsigned integer types
-  [[nodiscard]] constexpr auto operator-(const RecordType<PassiveType>& rhs) const noexcept
+  [[nodiscard]] friend constexpr auto operator-(const RecordType<PassiveType>& lhs,
+                                                const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    return *this + -rhs;
+    return lhs + -rhs;
   }
 
 #ifndef RT_ONLY_FUNDAMENTAL

@@ -65,3 +65,24 @@ TEST(test_RT_Graph, Copy) {
   EXPECT_EQ(deps[2], -1);
   EXPECT_EQ(deps[3], rt1.id());
 }
+
+TEST(test_RT_Graph, SumOfArray) {
+  // TODO: Finish this test
+  using PT    = double;
+  using RType = RT::RecordType<PT>;
+
+  constexpr size_t n = 10;
+  const std::vector<RType> vec(n, 1.0);
+
+  auto graph = std::make_shared<RT::Graph<PT>>();
+  std::for_each(std::cbegin(vec), std::cend(vec), [&](const auto& e) { e.register_graph(graph); });
+
+  RType sum = 0.0;
+  for (const auto& vi : vec) {
+    sum += vi;
+  }
+
+  const auto& deps = graph->dependencies();
+  const auto& ops  = graph->operations();
+  const auto& vals = graph->values();
+}

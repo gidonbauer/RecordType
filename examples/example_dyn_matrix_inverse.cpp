@@ -102,20 +102,22 @@ auto main() -> int {
   constexpr Eigen::Index n = 5;
 
   Eigen::MatrixX<DecayType> decay_mat = generate_random_spd_matrix<DecayType>(n);
+  auto graph                          = std::make_shared<RT::Graph<DecayType>>();
   Eigen::MatrixX<Type> mat(n, n);
   for (Eigen::Index i = 0; i < n; ++i) {
     for (Eigen::Index j = 0; j < n; ++j) {
       mat(i, j) = decay_mat(i, j);
+      mat(i, j).register_graph(graph);
     }
   }
 
   auto mat_inv = dynamic_matrix_inverse(mat);
 
   std::cout << "Matrix size: " << n << 'x' << n << '\n';
-  std::cout << "Number of operations (ADD, MUL, SQRT): " << Type::graph().count_ops() << '\n';
-  std::cout << "  Number ADD:  " << Type::graph().count_op(RT::NodeType::ADD) << '\n';
-  std::cout << "  Number MUL:  " << Type::graph().count_op(RT::NodeType::MUL) << '\n';
-  std::cout << "  Number SQRT: " << Type::graph().count_op(RT::NodeType::SQRT) << '\n';
+  std::cout << "Number of operations (ADD, MUL, SQRT): " << graph->count_ops() << '\n';
+  std::cout << "  Number ADD:  " << graph->count_op(RT::NodeType::ADD) << '\n';
+  std::cout << "  Number MUL:  " << graph->count_op(RT::NodeType::MUL) << '\n';
+  std::cout << "  Number SQRT: " << graph->count_op(RT::NodeType::SQRT) << '\n';
 
   RT::GraphToDotOptions opt{
       .unique_literals      = true,
@@ -123,17 +125,19 @@ auto main() -> int {
       .print_node_id        = false,
       .use_op_symbols       = false,
   };
-  save_to_dot<Type>(__FILE__, opt);
 
   // Check correctness
-  Eigen::MatrixX<DecayType> decay_mat_inv(n, n);
-
-  for (Eigen::Index i = 0; i < n; ++i) {
-    for (Eigen::Index j = 0; j < n; ++j) {
-      decay_mat_inv(i, j) = mat_inv(i, j).value();
+  {
+    Eigen::MatrixX<DecayType> decay_mat_inv(n, n);
+    for (Eigen::Index i = 0; i < n; ++i) {
+      for (Eigen::Index j = 0; j < n; ++j) {
+        decay_mat_inv(i, j) = mat_inv(i, j).value();
+      }
     }
+    std::cout << "Correct inverse: " << std::boolalpha
+              << is_identity(static_cast<Eigen::MatrixX<DecayType>>(decay_mat * decay_mat_inv))
+              << '\n';
   }
-  std::cout << "Correct inverse: " << std::boolalpha
-            << is_identity(static_cast<Eigen::MatrixX<DecayType>>(decay_mat * decay_mat_inv))
-            << '\n';
+
+  save_to_dot(__FILE__, graph.get(), opt);
 }
