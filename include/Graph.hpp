@@ -1,6 +1,8 @@
 #ifndef RT_GRAPH_HPP_
 #define RT_GRAPH_HPP_
 
+#include <cassert>
+#include <cstring>
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -38,7 +40,7 @@ class Graph {
     }
     (m_dependencies.push_back(ids), ...);
     m_dependencies.push_back(-static_cast<int64_t>(sizeof...(ids)));
-  };
+  }
 
   // -----------------------------------------------------------------------------------------------
   [[nodiscard]] constexpr auto add_operation(NodeType op, PassiveType value) noexcept -> int64_t {

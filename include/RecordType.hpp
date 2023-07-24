@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+#include <utility>
 #ifndef RT_ONLY_FUNDAMENTAL
 #include <cmath>
 #endif  // RT_ONLY_FUNDAMENTAL
@@ -34,7 +35,7 @@ class RecordType {
         m_node_type(node_type) {}
 
  public:
-  // Public default constructor; TODO: Should this write to graph?
+  // Public default constructor
   constexpr RecordType() noexcept
       : RecordType(static_cast<PassiveType>(0)) {}
 
@@ -43,12 +44,13 @@ class RecordType {
       : m_value(std::move(value)),
         m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
+    // TODO: This is probably unreachable
     if (m_graph) {
       m_id = m_graph->add_operation(m_node_type, m_value);
     }
   }
 
-  // Copy constructor; TODO: This might be skipped by the compiler
+  // Copy constructor
   constexpr RecordType(const RecordType<PassiveType>& other) noexcept
       : m_graph(other.m_graph),
         m_value(other.m_value),
@@ -60,7 +62,7 @@ class RecordType {
     }
   }
 
-  // Move constructor; TODO: This might be skipped by the compiler
+  // Move constructor
   constexpr RecordType(RecordType<PassiveType>&& other) noexcept
       : m_graph(std::exchange(other.m_graph, nullptr)),
         m_value(std::move(other.m_value)),
