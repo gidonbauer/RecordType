@@ -46,6 +46,7 @@ auto generate_random_spd_matrix(Eigen::Index size) -> Eigen::MatrixX<Float> {
          static_cast<Float>(size) * Eigen::MatrixX<Float>::Identity(size, size);
 }
 
+// TODO: Fix this example
 auto main() -> int {
   using Type      = RT::RecordType<double>;
   using DecayType = RT::decay_record_type_t<Type>;

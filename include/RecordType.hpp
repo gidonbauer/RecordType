@@ -18,6 +18,8 @@ namespace RT {
 template <typename>
 class Graph;
 
+constexpr int64_t UNREGISTERED = -1;
+
 template <typename PassiveType>
 class RecordType {
   mutable std::shared_ptr<Graph<PassiveType>> m_graph{};
@@ -28,7 +30,7 @@ class RecordType {
   // Private constructor, allows to choose node type; does not write to graph
   constexpr RecordType(PassiveType value, NodeType node_type) noexcept
       : m_value(std::move(value)),
-        m_id(-1),
+        m_id(UNREGISTERED),
         m_node_type(node_type) {}
 
  public:
@@ -39,7 +41,7 @@ class RecordType {
   // Public constructor, gets value
   constexpr RecordType(PassiveType value) noexcept
       : m_value(std::move(value)),
-        m_id(-1),
+        m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
     if (m_graph) {
       m_id = m_graph->add_operation(m_node_type, m_value);
@@ -50,7 +52,7 @@ class RecordType {
   constexpr RecordType(const RecordType<PassiveType>& other) noexcept
       : m_graph(other.m_graph),
         m_value(other.m_value),
-        m_id(-1),
+        m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
     if (m_graph) {
       m_graph->add_dependencies(other.id());
@@ -62,7 +64,7 @@ class RecordType {
   constexpr RecordType(RecordType<PassiveType>&& other) noexcept
       : m_graph(std::exchange(other.m_graph, nullptr)),
         m_value(std::move(other.m_value)),
-        m_id(-1),
+        m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
     if (m_graph) {
       m_graph->add_dependencies(other.id());
@@ -175,6 +177,13 @@ class RecordType {
 
     auto graph = get_graph(lhs, rhs);
     if (graph) {
+      if (lhs.id() == UNREGISTERED) {
+        lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
+      }
+      if (rhs.id() == UNREGISTERED) {
+        rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
+      }
+
       graph->add_dependencies(lhs.id(), rhs.id());
       res.m_id    = graph->add_operation(res.node_type(), res.value());
       res.m_graph = graph;
@@ -189,6 +198,13 @@ class RecordType {
 
     auto graph = get_graph(lhs, rhs);
     if (graph) {
+      if (lhs.id() == UNREGISTERED) {
+        lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
+      }
+      if (rhs.id() == UNREGISTERED) {
+        rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
+      }
+
       graph->add_dependencies(lhs.id(), rhs.id());
       res.m_id    = graph->add_operation(res.node_type(), res.value());
       res.m_graph = graph;
