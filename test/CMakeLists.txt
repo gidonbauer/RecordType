@@ -5,7 +5,15 @@ set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -O0 -fsanitize=address,undefined)
 
 
 set(executables
-        test_RT_RecordType
+        test_RT_RecordType_Construct
+        test_RT_RecordType_Compare
+        test_RT_RecordType_Add
+        test_RT_RecordType_Mul
+        test_RT_RecordType_Div
+        test_RT_RecordType_Sub
+        test_RT_RecordType_Sqrt
+        test_RT_RecordType_Sin
+        test_RT_RecordType_Cos
         test_RT_Graph
         test_RT_TypeTraits
 )

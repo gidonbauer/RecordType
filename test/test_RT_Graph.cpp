@@ -7,11 +7,16 @@ TEST(test_RT_Graph, SimpleAddition) {
   using Rec_t = RT::RecordType<int>;
   const Rec_t rt0(42);
   const Rec_t rt1(-42);
+
+  auto graph = std::make_shared<RT::Graph<int>>();
+  rt0.register_graph(graph);
+  rt1.register_graph(graph);
+
   const Rec_t rt2 = rt0 + rt1;
 
-  const auto& deps = Rec_t::graph().dependencies();
-  const auto& ops  = Rec_t::graph().operations();
-  const auto& vals = Rec_t::graph().values();
+  const auto& deps = graph->dependencies();
+  const auto& ops  = graph->operations();
+  const auto& vals = graph->values();
 
   ASSERT_EQ(ops.size(), 3ul);
   EXPECT_EQ(ops[0], rt0.node_type());
@@ -36,11 +41,14 @@ TEST(test_RT_Graph, SimpleAddition) {
 TEST(test_RT_Graph, Copy) {
   using Rec_t = RT::RecordType<int>;
   const Rec_t rt0(42);
+  auto graph = std::make_shared<RT::Graph<int>>();
+  rt0.register_graph(graph);
+
   const Rec_t rt1 = rt0;
 
-  const auto& deps = Rec_t::graph().dependencies();
-  const auto& ops  = Rec_t::graph().operations();
-  const auto& vals = Rec_t::graph().values();
+  const auto& deps = graph->dependencies();
+  const auto& ops  = graph->operations();
+  const auto& vals = graph->values();
 
   ASSERT_EQ(ops.size(), 2ul);
   EXPECT_EQ(ops[0], rt0.node_type());
