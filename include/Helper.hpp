@@ -9,12 +9,6 @@
 
 namespace RT {
 
-template <typename PassiveType>
-[[nodiscard]] auto get_unique_id() noexcept -> uint64_t {
-  static std::atomic<uint64_t> id_counter = 0ull;
-  return id_counter++;
-}
-
 template <typename T>
 [[nodiscard]] auto type_name() -> std::string {
   using namespace std::string_literals;

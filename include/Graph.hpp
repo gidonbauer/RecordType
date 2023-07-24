@@ -20,7 +20,7 @@ struct GraphToDotOptions {
 };
 
 template <typename T>
-concept RecordTypeId = std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, uint64_t>;
+concept RecordTypeId = std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, int64_t>;
 
 // TODO: Is the graph thread safe? We only add nodes and edges and never remove any.
 template <typename PassiveType>
@@ -36,23 +36,18 @@ class Graph {
     if constexpr (sizeof...(ids) == 0) {
       return;
     }
-
-    constexpr uint64_t sign_bit = 1ull << 63ull;
-    assert((... & !(ids & sign_bit)) && "All ids must be less than UINT64_MAX");
-
-    (m_dependencies.push_back(static_cast<int64_t>(ids)), ...);
+    (m_dependencies.push_back(ids), ...);
     m_dependencies.push_back(-static_cast<int64_t>(sizeof...(ids)));
   };
 
   // -----------------------------------------------------------------------------------------------
-  constexpr void add_operation(uint64_t id, NodeType op, PassiveType value) noexcept {
-    constexpr uint64_t sign_bit = 1ull << 63ull;
-    assert(!(id & sign_bit) && "id must be less than UINT64_MAX");
-
-    assert(m_operations.size() == id);
+  [[nodiscard]] constexpr auto add_operation(NodeType op, PassiveType value) noexcept -> int64_t {
+    assert(m_operations.size() == m_values.size());
+    const int64_t id = static_cast<int64_t>(m_operations.size());
     m_dependencies.push_back(static_cast<int64_t>(id));
     m_operations.push_back(op);
     m_values.push_back(std::move(value));
+    return id;
   }
 
   // -----------------------------------------------------------------------------------------------

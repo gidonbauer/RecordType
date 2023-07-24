@@ -7,14 +7,16 @@
 
 #include "Graph.hpp"
 
-template <typename RT_Type>
-void save_to_dot(const char* cpp_source_name, const RT::GraphToDotOptions& opt = {}) {
+template <typename PassiveType>
+void save_to_dot(const char* cpp_source_name,
+                 RT::Graph<PassiveType>* graph,
+                 const RT::GraphToDotOptions& opt = {}) {
   using namespace std::string_literals;
 
   const auto out_file =
       "graphs/"s + std::filesystem::path(cpp_source_name).stem().c_str() + ".dot"s;
   try {
-    RT_Type::graph().to_dot(out_file, opt);
+    graph->to_dot(out_file, opt);
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
     std::exit(1);

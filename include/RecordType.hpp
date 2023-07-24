@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <memory>
 #ifndef RT_ONLY_FUNDAMENTAL
 #include <cmath>
 #endif  // RT_ONLY_FUNDAMENTAL
@@ -19,16 +20,15 @@ class Graph;
 
 template <typename PassiveType>
 class RecordType {
-  static Graph<PassiveType> s_graph;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-  PassiveType m_value;
-  uint64_t m_id;
-  NodeType m_node_type;
+  mutable std::shared_ptr<Graph<PassiveType>> m_graph{};
+  PassiveType m_value{};
+  mutable int64_t m_id{};
+  mutable NodeType m_node_type{};
 
   // Private constructor, allows to choose node type; does not write to graph
   constexpr RecordType(PassiveType value, NodeType node_type) noexcept
       : m_value(std::move(value)),
-        m_id(get_unique_id<PassiveType>()),
+        m_id(-1),
         m_node_type(node_type) {}
 
  public:
@@ -39,27 +39,35 @@ class RecordType {
   // Public constructor, gets value
   constexpr RecordType(PassiveType value) noexcept
       : m_value(std::move(value)),
-        m_id(get_unique_id<PassiveType>()),
+        m_id(-1),
         m_node_type(NodeType::VAR) {
-    s_graph.add_operation(m_id, m_node_type, m_value);
+    if (m_graph) {
+      m_id = m_graph->add_operation(m_node_type, m_value);
+    }
   }
 
   // Copy constructor; TODO: This might be skipped by the compiler
   constexpr RecordType(const RecordType<PassiveType>& other) noexcept
-      : m_value(other.m_value),
-        m_id(get_unique_id<PassiveType>()),
+      : m_graph(other.m_graph),
+        m_value(other.m_value),
+        m_id(-1),
         m_node_type(NodeType::VAR) {
-    s_graph.add_dependencies(other.id());
-    s_graph.add_operation(m_id, m_node_type, m_value);
+    if (m_graph) {
+      m_graph->add_dependencies(other.id());
+      m_id = m_graph->add_operation(m_node_type, m_value);
+    }
   }
 
   // Move constructor; TODO: This might be skipped by the compiler
   constexpr RecordType(RecordType<PassiveType>&& other) noexcept
-      : m_value(std::move(other.m_value)),
-        m_id(get_unique_id<PassiveType>()),
+      : m_graph(std::exchange(other.m_graph, nullptr)),
+        m_value(std::move(other.m_value)),
+        m_id(-1),
         m_node_type(NodeType::VAR) {
-    s_graph.add_dependencies(other.id());
-    s_graph.add_operation(m_id, m_node_type, m_value);
+    if (m_graph) {
+      m_graph->add_dependencies(other.id());
+      m_id = m_graph->add_operation(m_node_type, m_value);
+    }
   }
 
   // Copy assign operator
@@ -68,11 +76,13 @@ class RecordType {
     // Keep copy of other id in case of self assignment
     const auto other_id = other.id();
 
+    m_graph     = get_graph(*this, other);
     m_value     = other.m_value;
-    m_id        = get_unique_id<PassiveType>();
     m_node_type = NodeType::VAR;
-    s_graph.add_dependencies(other_id);
-    s_graph.add_operation(m_id, m_node_type, m_value);
+    if (m_graph) {
+      m_graph->add_dependencies(other_id);
+      m_id = m_graph->add_operation(m_node_type, m_value);
+    }
     return *this;
   }
 
@@ -80,24 +90,51 @@ class RecordType {
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
     const auto other_id = other.id();
 
+    m_graph     = std::exchange(other.m_graph, nullptr);
     m_value     = std::move(other.m_value);
-    m_id        = get_unique_id<PassiveType>();
     m_node_type = NodeType::VAR;
-    s_graph.add_dependencies(other_id);
-    s_graph.add_operation(m_id, m_node_type, m_value);
+    if (m_graph) {
+      m_graph->add_dependencies(other_id);
+      m_id = m_graph->add_operation(m_node_type, m_value);
+    }
     return *this;
   }
 
   // Destructor
   constexpr ~RecordType() noexcept = default;
 
-  [[nodiscard]] constexpr auto value() const noexcept -> const PassiveType& { return m_value; }
-  [[nodiscard]] constexpr auto id() const noexcept -> uint64_t { return m_id; }
-  [[nodiscard]] constexpr auto node_type() const noexcept -> NodeType { return m_node_type; }
-  [[nodiscard]] static constexpr auto graph() noexcept -> const Graph<PassiveType>& {
-    return s_graph;
+  // Set graph
+  constexpr void register_graph(std::shared_ptr<Graph<PassiveType>> graph) const noexcept {
+    m_graph = graph;
+    m_id    = m_graph->add_operation(m_node_type, m_value);
   }
 
+  [[nodiscard]] constexpr auto value() const noexcept -> const PassiveType& { return m_value; }
+  [[nodiscard]] constexpr auto id() const noexcept -> int64_t { return m_id; }
+  [[nodiscard]] constexpr auto node_type() const noexcept -> NodeType { return m_node_type; }
+  [[nodiscard]] constexpr auto graph() const noexcept -> const Graph<PassiveType>* {
+    return m_graph.get();
+  }
+
+ private:
+  [[nodiscard]] static constexpr auto get_graph(const RecordType& lhs,
+                                                const RecordType& rhs) noexcept
+      -> std::shared_ptr<Graph<PassiveType>> {
+    if (lhs.m_graph != rhs.m_graph) {
+      if (lhs.m_graph && rhs.m_graph) {
+        return nullptr;
+      } else if (lhs.m_graph) {
+        return lhs.m_graph;
+      } else if (rhs.m_graph) {
+        return rhs.m_graph;
+      } else {
+        RT_PANIC("Unreachable.");
+      }
+    }
+    return lhs.m_graph;
+  }
+
+ public:
   [[nodiscard]] constexpr auto operator==(const RecordType<PassiveType>& other) const noexcept
       -> bool {
     return m_value == other.m_value;
@@ -131,21 +168,29 @@ class RecordType {
     return *this;
   }
 
-  [[nodiscard]] friend constexpr auto operator+(const RecordType<PassiveType>& lhs,
-                                                const RecordType<PassiveType>& rhs) noexcept
+  [[nodiscard]] constexpr auto operator+(const RecordType<PassiveType>& rhs) const noexcept
       -> RecordType<PassiveType> {
-    RecordType<PassiveType> res(lhs.value() + rhs.value(), NodeType::ADD);
-    s_graph.add_dependencies(lhs.id(), rhs.id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    RecordType<PassiveType> res(value() + rhs.value(), NodeType::ADD);
+
+    auto graph = get_graph(*this, rhs);
+    if (graph) {
+      graph->add_dependencies(id(), rhs.id());
+      res.m_id    = graph->add_operation(res.node_type(), res.value());
+      res.m_graph = graph;
+    }
     return res;
   }
 
-  [[nodiscard]] friend constexpr auto operator*(const RecordType<PassiveType>& lhs,
-                                                const RecordType<PassiveType>& rhs) noexcept
+  [[nodiscard]] constexpr auto operator*(const RecordType<PassiveType>& rhs) const noexcept
       -> RecordType<PassiveType> {
-    RecordType<PassiveType> res(lhs.value() * rhs.value(), NodeType::MUL);
-    s_graph.add_dependencies(lhs.id(), rhs.id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    RecordType<PassiveType> res(value() * rhs.value(), NodeType::MUL);
+
+    auto graph = get_graph(*this, rhs);
+    if (graph) {
+      graph->add_dependencies(id(), rhs.id());
+      res.m_id    = graph->add_operation(res.node_type(), res.value());
+      res.m_graph = graph;
+    }
     return res;
   }
 
@@ -155,16 +200,18 @@ class RecordType {
                   "`PassiveType` has to be a floating point type, otherwise the result would not "
                   "be the same as if we would be using just `PassiveType`");
     RecordType<PassiveType> res(static_cast<PassiveType>(1) / m_value, NodeType::INV);
-    s_graph.add_dependencies(id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    if (m_graph) {
+      m_graph->add_dependencies(id());
+      res.m_id    = m_graph->add_operation(res.node_type(), res.value());
+      res.m_graph = m_graph;
+    }
     return res;
   }
 
   // TODO: This does not work for integer types because of `invert`
-  [[nodiscard]] friend constexpr auto operator/(const RecordType<PassiveType>& lhs,
-                                                const RecordType<PassiveType>& rhs) noexcept
+  [[nodiscard]] constexpr auto operator/(const RecordType<PassiveType>& rhs) const noexcept
       -> RecordType<PassiveType> {
-    return lhs * rhs.invert();
+    return *this * rhs.invert();
   }
 
   // TODO: This does not work for unsigned integer types
@@ -173,40 +220,51 @@ class RecordType {
                   "`PassiveType` has to be signed, otherwise the result would not be the same as "
                   "if we would be using just `PassiveType`");
     RecordType<PassiveType> res(-m_value, NodeType::NEG);
-    s_graph.add_dependencies(id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    if (m_graph) {
+      m_graph->add_dependencies(id());
+      res.m_id    = m_graph->add_operation(res.node_type(), res.value());
+      res.m_graph = m_graph;
+    }
     return res;
   }
 
   // TODO: This does not work for unsigned integer types
-  [[nodiscard]] friend constexpr auto operator-(const RecordType<PassiveType>& lhs,
-                                                const RecordType<PassiveType>& rhs) noexcept
+  [[nodiscard]] constexpr auto operator-(const RecordType<PassiveType>& rhs) const noexcept
       -> RecordType<PassiveType> {
-    return lhs + -rhs;
+    return *this + -rhs;
   }
 
 #ifndef RT_ONLY_FUNDAMENTAL
   [[nodiscard]] friend auto sqrt(const RecordType<PassiveType>& x) noexcept
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::sqrt(x.m_value)), NodeType::SQRT);
-    s_graph.add_dependencies(x.id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    if (x.m_graph) {
+      x.m_graph->add_dependencies(x.id());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_graph = x.m_graph;
+    }
     return res;
   }
 
   [[nodiscard]] friend auto sin(const RecordType<PassiveType>& x) noexcept
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::sin(x.m_value)), NodeType::SIN);
-    s_graph.add_dependencies(x.id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    if (x.m_graph) {
+      x.m_graph->add_dependencies(x.id());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_graph = x.m_graph;
+    }
     return res;
   }
 
   [[nodiscard]] friend auto cos(const RecordType<PassiveType>& x) noexcept
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::cos(x.m_value)), NodeType::COS);
-    s_graph.add_dependencies(x.id());
-    s_graph.add_operation(res.id(), res.node_type(), res.value());
+    if (x.m_graph) {
+      x.m_graph->add_dependencies(x.id());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_graph = x.m_graph;
+    }
     return res;
   }
 #else
@@ -226,10 +284,6 @@ class RecordType {
   }
 #endif  // RT_ONLY_FUNDAMENTAL
 };
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-template <typename PassiveType>
-Graph<PassiveType> RecordType<PassiveType>::s_graph = Graph<PassiveType>();
-// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 template <typename PassiveType>
 auto operator<<(std::ostream& out, const RecordType<PassiveType>& t) noexcept -> std::ostream& {

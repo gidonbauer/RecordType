@@ -15,9 +15,16 @@ void f(Eigen::Vector2<T>& v) {
 }
 
 auto main() -> int {
-  using Type = RT::RecordType<double>;
-  Eigen::Vector2<Type> v{1.0, 2.0};
+  using PassiveType = double;
+  using RType       = RT::RecordType<PassiveType>;
+
+  Eigen::Vector2<RType> v{1.0, 2.0};
+
+  auto graph = std::make_shared<RT::Graph<PassiveType>>();
+  v(0).register_graph(graph);
+  v(1).register_graph(graph);
+
   f(v);
 
-  save_to_dot<Type>(__FILE__);
+  save_to_dot(__FILE__, graph.get());
 }
