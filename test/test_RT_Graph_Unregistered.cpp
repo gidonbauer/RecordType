@@ -288,3 +288,94 @@ TEST(test_RT_Graph_Unregistered, DivisionWithUnregisteredLhs) {
   EXPECT_DOUBLE_EQ(*v++, 3.0 / 5.0);
   // - vals -------------------------------------
 }
+
+TEST(test_RT_Graph_Unregistered, AssignUnregisteredLhs) {
+  using PT    = double;
+  using RType = RT::RecordType<PT>;
+
+  RType rt1  = 3.0;
+  auto graph = std::make_shared<RT::Graph<PT>>();
+  rt1.register_graph(graph);
+
+  RType rt2 = rt1;
+
+  const auto& deps = graph->dependencies();
+  const auto& ops  = graph->operations();
+  const auto& vals = graph->values();
+
+  EXPECT_NE(rt1.id(), RT::UNREGISTERED) << "rt1 was not properly registered in the graph";
+  EXPECT_NE(rt2.id(), RT::UNREGISTERED) << "rt2 was not properly registered in the graph";
+
+  // - deps -------------------------------------
+  ASSERT_EQ(deps.size(), 4ul);
+  auto d = deps.cbegin();
+  EXPECT_EQ(*d++, rt1.id());
+
+  EXPECT_EQ(*d++, rt1.id());
+  EXPECT_EQ(*d++, -1);
+  EXPECT_EQ(*d++, rt2.id());
+  // - deps -------------------------------------
+
+  // - ops --------------------------------------
+  ASSERT_EQ(ops.size(), 2ul);
+  auto o = ops.cbegin();
+  EXPECT_EQ(*o++, RT::NodeType::VAR);
+  EXPECT_EQ(*o++, RT::NodeType::VAR);
+  // - ops --------------------------------------
+
+  // - vals -------------------------------------
+  ASSERT_EQ(vals.size(), 2ul);
+  auto v = vals.cbegin();
+  EXPECT_DOUBLE_EQ(*v++, 3.0);
+  EXPECT_DOUBLE_EQ(*v++, 3.0);
+  // - vals -------------------------------------
+}
+
+TEST(test_RT_Graph_Unregistered, AssignUnregisteredRhs) {
+  using PT    = double;
+  using RType = RT::RecordType<PT>;
+
+  RType rt1 = 3.0;
+  RType rt2;
+  auto graph = std::make_shared<RT::Graph<PT>>();
+  rt2.register_graph(graph);
+
+  const auto orig_rt2_id = rt2.id();
+
+  rt2 = rt1;
+
+  const auto& deps = graph->dependencies();
+  const auto& ops  = graph->operations();
+  const auto& vals = graph->values();
+
+  EXPECT_NE(rt1.id(), RT::UNREGISTERED) << "rt1 was not properly registered in the graph";
+  EXPECT_NE(rt2.id(), RT::UNREGISTERED) << "rt2 was not properly registered in the graph";
+
+  // - deps -------------------------------------
+  ASSERT_EQ(deps.size(), 5ul);
+  auto d = deps.cbegin();
+  EXPECT_EQ(*d++, orig_rt2_id);
+
+  EXPECT_EQ(*d++, rt1.id());
+
+  EXPECT_EQ(*d++, rt1.id());
+  EXPECT_EQ(*d++, -1);
+  EXPECT_EQ(*d++, rt2.id());
+  // - deps -------------------------------------
+
+  // - ops --------------------------------------
+  ASSERT_EQ(ops.size(), 3ul);
+  auto o = ops.cbegin();
+  EXPECT_EQ(*o++, RT::NodeType::VAR);
+  EXPECT_EQ(*o++, RT::NodeType::VAR);
+  EXPECT_EQ(*o++, RT::NodeType::VAR);
+  // - ops --------------------------------------
+
+  // - vals -------------------------------------
+  ASSERT_EQ(vals.size(), 3ul);
+  auto v = vals.cbegin();
+  EXPECT_DOUBLE_EQ(*v++, 0.0);
+  EXPECT_DOUBLE_EQ(*v++, 3.0);
+  EXPECT_DOUBLE_EQ(*v++, 3.0);
+  // - vals -------------------------------------
+}

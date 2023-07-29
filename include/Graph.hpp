@@ -103,6 +103,7 @@ class Graph {
       }
 
       for (int64_t i = 0; i < -num_deps; ++i) {
+        assert(it != std::crend(m_dependencies));
         auto from_id = *(it++);
         assert(from_id >= 0);
         out << "  node_" << from_id << " -> node_" << to_id << ";\n";

@@ -78,12 +78,17 @@ class RecordType {
   constexpr auto operator=(const RecordType<PassiveType>& other) noexcept
       -> RecordType<PassiveType>& {
     // Keep copy of other id in case of self assignment
-    const auto other_id = other.id();
+    auto other_id = other.id();
 
     m_graph     = get_graph(*this, other);
     m_value     = other.m_value;
     m_node_type = NodeType::VAR;
     if (m_graph) {
+      if (other.id() == UNREGISTERED) {
+        other.m_id = m_graph->add_operation(other.node_type(), other.value());
+        other_id   = other.m_id;
+      }
+
       m_graph->add_dependencies(other_id);
       m_id = m_graph->add_operation(m_node_type, m_value);
     }
@@ -92,12 +97,18 @@ class RecordType {
 
   // Move assign operator
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
-    const auto other_id = other.id();
+    auto other_id = other.id();
 
     m_graph     = get_graph(*this, other);
     m_value     = std::move(other.m_value);
     m_node_type = NodeType::VAR;
     if (m_graph) {
+      if (other.id() == UNREGISTERED) {
+        // TODO: Do we need to override this, shouldn't other be thrown away?
+        other.m_id = m_graph->add_operation(other.node_type(), other.value());
+        other_id   = other.m_id;
+      }
+
       m_graph->add_dependencies(other_id);
       m_id = m_graph->add_operation(m_node_type, m_value);
     }
