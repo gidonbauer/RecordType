@@ -91,3 +91,11 @@ TEST(test_RT_RecordType_Construct, Assign) {
     EXPECT_EQ(rt3.node_type(), RT::NodeType::VAR);
   }
 }
+
+TEST(test_RT_RecordType_Construct, AssignPassive) {
+  using PT    = double;
+  using RType = RT::RecordType<PT>;
+  RType rt    = 42.0;
+  rt          = 21.0;
+  EXPECT_DOUBLE_EQ(rt.value(), 21.0);
+}
