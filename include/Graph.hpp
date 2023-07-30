@@ -91,14 +91,14 @@ class Graph {
     }
 
     for (auto it = std::crbegin(m_dependencies); it != std::crend(m_dependencies);) {
-      auto to_id = *(it++);
+      const auto to_id = *(it++);
       assert(to_id >= 0);
 
       if (it == std::crend(m_dependencies)) {
         break;
       }
 
-      auto num_deps = *(it++);
+      const auto num_deps = *(it++);
       if (num_deps >= 0) {
         --it;
         continue;
@@ -106,7 +106,7 @@ class Graph {
 
       for (int64_t i = 0; i < -num_deps; ++i) {
         assert(it != std::crend(m_dependencies));
-        auto from_id = *(it++);
+        const auto from_id = *(it++);
         assert(from_id >= 0);
         out << "  node_" << from_id << " -> node_" << to_id << ";\n";
       }
