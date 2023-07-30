@@ -105,7 +105,7 @@ class RecordType {
     if (m_graph) {
       if (other.id() == UNREGISTERED) {
         // TODO: Do we need to override this, shouldn't other be thrown away?
-        other.m_id = m_graph->add_operation(other.node_type(), other.value());
+        other.m_id = m_graph->add_operation(other.node_type(), m_value);
         other_id   = other.m_id;
       }
 

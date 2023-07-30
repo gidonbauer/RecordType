@@ -45,8 +45,8 @@ class Graph {
   // -----------------------------------------------------------------------------------------------
   [[nodiscard]] constexpr auto add_operation(NodeType op, PassiveType value) noexcept -> int64_t {
     assert(m_operations.size() == m_values.size());
-    const int64_t id = static_cast<int64_t>(m_operations.size());
-    m_dependencies.push_back(static_cast<int64_t>(id));
+    const auto id = static_cast<int64_t>(m_operations.size());
+    m_dependencies.push_back(id);
     m_operations.push_back(op);
     m_values.push_back(std::move(value));
     return id;
@@ -54,20 +54,22 @@ class Graph {
 
   // -----------------------------------------------------------------------------------------------
   [[nodiscard]] constexpr auto count_ops() const noexcept -> size_t {
-    return std::accumulate(
-        std::cbegin(m_operations),
-        std::cend(m_operations),
-        0ul,
-        [](size_t count, NodeType node_type) { return count + is_op(node_type); });
+    return std::accumulate(std::cbegin(m_operations),
+                           std::cend(m_operations),
+                           0ul,
+                           [](size_t count, NodeType node_type) {
+                             return count + static_cast<size_t>(is_op(node_type));
+                           });
   }
 
   // -----------------------------------------------------------------------------------------------
   [[nodiscard]] constexpr auto count_op(NodeType op) const noexcept -> size_t {
-    return std::accumulate(
-        std::cbegin(m_operations),
-        std::cend(m_operations),
-        0ul,
-        [op](size_t count, NodeType node_type) { return count + (node_type == op); });
+    return std::accumulate(std::cbegin(m_operations),
+                           std::cend(m_operations),
+                           0ul,
+                           [op](size_t count, NodeType node_type) {
+                             return count + static_cast<size_t>(node_type == op);
+                           });
   }
 
   // -----------------------------------------------------------------------------------------------
