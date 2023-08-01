@@ -15,6 +15,7 @@ set(executables
         example_eigen_llt
         example_AAD_112
         example_matrix_function
+        example_to_python
 )
 
 foreach(exec ${executables})
