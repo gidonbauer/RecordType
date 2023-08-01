@@ -7,6 +7,7 @@
 
 namespace RT {
 
+// -------------------------------------------------------------------------------------------------
 enum class NodeType {
   LITERAL,
   VAR,
@@ -20,6 +21,7 @@ enum class NodeType {
   NODE_TYPE_COUNT,
 };
 
+// -------------------------------------------------------------------------------------------------
 [[nodiscard]] constexpr auto is_op(NodeType node_type) noexcept -> bool {
   // TODO: Are NodeType::INV and NodeType::NEG operations that we want to count?
   static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
@@ -28,41 +30,39 @@ enum class NodeType {
          node_type == NodeType::SIN || node_type == NodeType::COS;
 }
 
-auto operator<<(std::ostream& out, NodeType node_type) noexcept -> std::ostream& {
+// -------------------------------------------------------------------------------------------------
+constexpr auto to_string(NodeType node_type) noexcept -> std::string {
   static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
                 "Number of node types changed, add name to switch statement.");
+  using namespace std::string_literals;
+
   switch (node_type) {
     case NodeType::LITERAL:
-      out << "LITERAL";
-      break;
+      return "LITERAL"s;
     case NodeType::VAR:
-      out << "VAR";
-      break;
+      return "VAR"s;
     case NodeType::ADD:
-      out << "ADD";
-      break;
+      return "ADD"s;
     case NodeType::MUL:
-      out << "MUL";
-      break;
+      return "MUL"s;
     case NodeType::INV:
-      out << "INV";
-      break;
+      return "INV"s;
     case NodeType::NEG:
-      out << "NEG";
-      break;
+      return "NEG"s;
     case NodeType::SQRT:
-      out << "SQRT";
-      break;
+      return "SQRT"s;
     case NodeType::SIN:
-      out << "SIN";
-      break;
+      return "SIN"s;
     case NodeType::COS:
-      out << "COS";
-      break;
+      return "COS"s;
     default:
       RT_PANIC("Unknown NodeType: `" << static_cast<int>(node_type) << "`.");
   }
+}
 
+// -------------------------------------------------------------------------------------------------
+auto operator<<(std::ostream& out, NodeType node_type) noexcept -> std::ostream& {
+  out << to_string(node_type);
   return out;
 }
 
