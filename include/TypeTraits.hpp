@@ -3,10 +3,10 @@
 
 #include <type_traits>
 
-#include "Macros.hpp"
-#include "RecordType.hpp"
-
 namespace RT {
+
+template <typename PassiveType>
+class RecordType;
 
 // - Check for RecordType --------------------------------------------------------------------------
 template <typename T>

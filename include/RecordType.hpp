@@ -337,7 +337,7 @@ template <FwdContainerType CT, typename PassiveType>
 constexpr void register_variable(const CT& container,
                                  std::shared_ptr<Graph<PassiveType>> graph) noexcept {
   std::for_each(std::cbegin(container), std::cend(container), [&](const auto& rt) {
-        rt.register_graph(graph);
+    rt.register_graph(graph);
   });
 }
 

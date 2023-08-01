@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "RecordType.hpp"
 #include "TypeTraits.hpp"
 
 #define EXPECT_NOT_RECORD_TYPE(T)                                                                  \
