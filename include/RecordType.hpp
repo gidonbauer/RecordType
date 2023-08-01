@@ -13,6 +13,7 @@
 #include "Helper.hpp"
 #include "Macros.hpp"
 #include "NodeType.hpp"
+#include "TypeTraits.hpp"
 
 namespace RT {
 
@@ -322,6 +323,22 @@ template <typename PassiveType>
 auto operator<<(std::ostream& out, const RecordType<PassiveType>& t) noexcept -> std::ostream& {
   out << "node_" << t.id() << " (" << t.node_type() << ", " << t.value() << ")";
   return out;
+}
+
+// - Register record type --------------------------------------------------------------------------
+template <typename T>
+requires is_record_type_v<T>
+constexpr void register_variable(const T& rt,
+                                 std::shared_ptr<Graph<decay_record_type_t<T>>> graph) noexcept {
+  rt.register_graph(graph);
+}
+
+template <FwdContainerType CT, typename PassiveType>
+constexpr void register_variable(const CT& container,
+                                 std::shared_ptr<Graph<PassiveType>> graph) noexcept {
+  std::for_each(std::cbegin(container), std::cend(container), [&](const auto& rt) {
+        rt.register_graph(graph);
+  });
 }
 
 }  // namespace RT
