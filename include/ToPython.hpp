@@ -12,8 +12,9 @@
 
 namespace RT {
 
-// TODO: Handle output variable properly, a variable might be an output variable but still be used
-//       in a calculation
+// TODO: 1) Handle output variable properly, a variable might be an output variable but still be
+//          used in a calculation
+//       2) Test `to_python`
 template <typename PassiveType>
 void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
   // - Setup -------------------------------------------------------------------
