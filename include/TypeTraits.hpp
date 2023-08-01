@@ -26,6 +26,31 @@ constexpr bool is_record_type_v = is_record_type<T>::value;
 template <typename T>
 using decay_record_type_t = typename is_record_type<T>::underlying_type;
 
+// - Container concept -----------------------------------------------------------------------------
+template <typename Container>
+concept FwdContainerType = requires(Container c) {
+  std::begin(c);
+  std::end(c);
+
+  std::cbegin(c);
+  std::cend(c);
+};
+
+template <typename Container>
+concept BidirContainerType = requires(Container c) {
+  std::begin(c);
+  std::end(c);
+
+  std::cbegin(c);
+  std::cend(c);
+
+  std::rbegin(c);
+  std::rend(c);
+
+  std::crbegin(c);
+  std::crend(c);
+};
+
 }  // namespace RT
 
 #endif  // RT_TYPE_TRAITS_HPP_
