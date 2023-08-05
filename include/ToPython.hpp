@@ -37,7 +37,8 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
   auto op_it   = std::crbegin(ops);
   auto vals_it = std::crbegin(vals);
-  for (auto dep_it = std::crbegin(deps); dep_it != std::crend(deps);) {
+  auto dep_it  = std::crbegin(deps);
+  while (dep_it != std::crend(deps)) {
     const auto to_id = *(dep_it++);
     assert(to_id >= 0);
 

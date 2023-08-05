@@ -28,7 +28,7 @@ auto main() -> int {
   std::cout << "[" << v(0).value() << ", " << v(1).value() << "]\n";
 
   try {
-    const std::string filename{"test.py"};
+    const std::string filename{"python/test.py"};
     RT::to_python(graph.get(), filename);
     std::cout << "Wrote Graph code to `" << filename << "`.\n";
   } catch (const std::exception& e) {
