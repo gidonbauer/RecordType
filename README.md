@@ -1,6 +1,4 @@
 # RecordType
-[![pipeline status](https://gitlab.com/heimkapital/RecordType/badges/main/pipeline.svg)](https://gitlab.com/heimkapital/RecordType/-/commits/main)
-
 A simple C++ header-only library for visualizing (simple) algorithms as graphs.
 
 ## Getting started
