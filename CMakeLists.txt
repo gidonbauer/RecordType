@@ -18,9 +18,9 @@ if(COMPILER_SUPPORTS_MARCH_NATIVE)
 endif()
 
 # - Use ccache to cache compiled code -------------------------------------------------------------
-option(USE_CCACHE "Use ccache to speed up compilation process" ON)
+option(RT_USE_CCACHE "Use ccache to speed up compilation process" ON)
 find_program(CCACHE ccache)
-if (CCACHE AND USE_CCACHE)
+if (CCACHE AND RT_USE_CCACHE)
     message(STATUS "Use ccache")
     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
 else()
@@ -28,15 +28,15 @@ else()
 endif()
 
 # - Examples; default is ON -----------------------------------------------------------------------
-option(BUILD_EXAMPLE "Build examples" ON)
-if(BUILD_EXAMPLE)
+option(RT_BUILD_EXAMPLE "Build examples" ON)
+if(RT_BUILD_EXAMPLE)
     message(STATUS "Build examples")
     add_subdirectory(${CMAKE_SOURCE_DIR}/examples/)
 endif()
 
 # - Tests; default is OFF -------------------------------------------------------------------------
-option(BUILD_TEST "Build tests using the google test library" OFF)
-if(BUILD_TEST)
+option(RT_BUILD_TEST "Build tests using the google test library" OFF)
+if(RT_BUILD_TEST)
     enable_testing()
 
     include(FetchContent)
