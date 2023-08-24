@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <limits>
 #include <random>
@@ -51,7 +50,7 @@ auto generate_random_spd_matrix(Eigen::Index size) -> Eigen::MatrixX<Float> {
 // - Dynamic matrix inverse ------------------------------------------------------------------------
 template <typename Float>
 auto dynamic_matrix_inverse(const Eigen::MatrixX<Float>& A) noexcept -> Eigen::MatrixX<Float> {
-  assert(A.rows() == A.cols() && "Matrix must be square.");
+  RT_ASSERT(A.rows() == A.cols(), "Matrix must be square.");
 
   const Eigen::Index n = A.rows();
   const auto all       = Eigen::seq(0, n - 1);

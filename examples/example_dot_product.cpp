@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -8,7 +7,7 @@
 
 template <typename T>
 auto dot_product(const std::vector<T>& a, const std::vector<T>& b) -> T {
-  assert(a.size() == b.size() && "a and b must have the same size.");
+  RT_ASSERT(a.size() == b.size(), "a and b must have the same size.");
 
   T res = 0;
   for (size_t i = 0; i < a.size(); ++i) {

@@ -43,6 +43,15 @@ RT_ERROR_LOC(const std::source_location loc = std::source_location::current()) -
   } while (false)
 
 #define RT_DEBUG_PRINT(x) std::cerr << "\033[94m[DEBUG]\033[0m " << #x << " = " << (x) << '\n'
+
+#define RT_ASSERT(condition, msg)                                                                  \
+  do {                                                                                             \
+    if (!(condition)) {                                                                            \
+      std::cerr << "\033[31m[ASSERT]\033[0m " << RT_ERROR_LOC() << ": `" << #condition             \
+                << "` failed: " << msg << '\n';                                                    \
+      std::abort();                                                                                \
+    }                                                                                              \
+  } while (false)
 // NOLINTEND(cppcoreguidelines-macro-usage,cppcoreguidelines-pro-bounds-array-to-pointer-decay,bugprone-macro-parentheses)
 
 #endif  // RT_MACROS_HPP_

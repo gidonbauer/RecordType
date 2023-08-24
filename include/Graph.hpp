@@ -1,7 +1,6 @@
 #ifndef RT_GRAPH_HPP_
 #define RT_GRAPH_HPP_
 
-#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <numeric>
@@ -44,7 +43,9 @@ class Graph {
 
   // -----------------------------------------------------------------------------------------------
   [[nodiscard]] constexpr auto add_operation(NodeType op, PassiveType value) noexcept -> int64_t {
-    assert(m_operations.size() == m_values.size());
+    RT_ASSERT(m_operations.size() == m_values.size(),
+              "`m_operations` and `m_values` must have same size, but sizes are size(m_operations)="
+                  << m_operations.size() << " and size(m_values)=" << m_values.size());
     const auto id = static_cast<int64_t>(m_operations.size());
     m_dependencies.push_back(id);
     m_operations.push_back(op);
@@ -84,7 +85,9 @@ class Graph {
     // Begin Graph
     out << "digraph {\n";
 
-    assert(m_operations.size() == m_values.size());
+    RT_ASSERT(m_operations.size() == m_values.size(),
+              "`m_operations` and `m_values` must have same size, but sizes are size(m_operations)="
+                  << m_operations.size() << " and size(m_values)=" << m_values.size());
     for (size_t id = 0ul; id < m_operations.size(); ++id) {
       out << "  node_" << id << " [label=\"node_" << id << " (" << m_operations[id] << ", "
           << m_values[id] << ")\"];\n";
@@ -92,7 +95,10 @@ class Graph {
 
     for (auto it = std::crbegin(m_dependencies); it != std::crend(m_dependencies);) {
       const auto to_id = *(it++);
-      assert(to_id >= 0);
+      RT_ASSERT(to_id >= 0,
+                "`to_id` must be greater or equal to 0, otherwise it would be the number of "
+                "dependencies. Is "
+                    << to_id);
 
       if (it == std::crend(m_dependencies)) {
         break;
@@ -105,9 +111,14 @@ class Graph {
       }
 
       for (int64_t i = 0; i < -num_deps; ++i) {
-        assert(it != std::crend(m_dependencies));
+        RT_ASSERT(it != std::crend(m_dependencies),
+                  "`it` should not have reached the end of the array");
         const auto from_id = *(it++);
-        assert(from_id >= 0);
+        RT_ASSERT(from_id >= 0,
+                  "`from_id` must be greater or equal to 0, otherwise it would be the number of "
+                  "dependencies. Is "
+                      << from_id);
+
         out << "  node_" << from_id << " -> node_" << to_id << ";\n";
       }
     }

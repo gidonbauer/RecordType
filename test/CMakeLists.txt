@@ -19,6 +19,7 @@ set(executables
         test_RT_Graph_OpAssign
         test_RT_Graph_Intermediate_Register
         test_RT_TypeTraits
+        test_RT_assert
 )
 
 include(GoogleTest)

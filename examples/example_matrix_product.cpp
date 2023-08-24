@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -11,10 +10,10 @@ using Matrix = std::vector<std::vector<T>>;
 
 template <typename T>
 auto mat_mult(const Matrix<T>& lhs, const Matrix<T>& rhs) -> Matrix<T> {
-  assert(lhs.size() >= 1ul);
-  assert(rhs.size() >= 1ul);
-  assert(rhs[0].size() >= 1ul);
-  assert(lhs[0].size() == rhs.size());
+  RT_ASSERT(lhs.size() >= 1ul, "");
+  RT_ASSERT(rhs.size() >= 1ul, "");
+  RT_ASSERT(rhs[0].size() >= 1ul, "");
+  RT_ASSERT(lhs[0].size() == rhs.size(), "");
 
   const size_t m = lhs.size();
   const size_t n = rhs[0].size();

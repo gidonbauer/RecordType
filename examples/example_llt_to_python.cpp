@@ -64,7 +64,7 @@ auto main() -> int {
   Eigen::MatrixX<Type> mat_inv = mat.llt().solve(Eigen::MatrixX<Type>::Identity(n, n));
 
   std::ofstream out("llt_graph.txt");
-  assert(out);
+  RT_ASSERT(out, "`out` has to be a vaild ofstream.");
   graph->dump_data(out);
 
   try {

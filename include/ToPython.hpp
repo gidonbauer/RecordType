@@ -40,11 +40,15 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
   auto dep_it  = std::crbegin(deps);
   while (dep_it != std::crend(deps)) {
     const auto to_id = *(dep_it++);
-    assert(to_id >= 0);
+    RT_ASSERT(to_id >= 0,
+              "`to_id` must be greater or equal to 0, otherwise it would be the number of "
+              "dependencies. Is "
+                  << to_id);
 
     if (dep_it == std::crend(deps)) {
       input_variables.push_back(to_id);
-      assert(vals_it != std::crend(vals));
+      RT_ASSERT(vals_it != std::crend(vals),
+                "`vals_it` should not have reached the end of the array");
       input_values.push_back(*vals_it++);
       break;
     }
@@ -53,24 +57,26 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
     if (num_deps >= 0) {
       --dep_it;
       input_variables.push_back(to_id);
-      assert(vals_it != std::crend(vals));
+      RT_ASSERT(vals_it != std::crend(vals),
+                "`vals_it` should not have reached the end of the array");
       input_values.push_back(*vals_it++);
       continue;
     }
 
-    assert(vals_it != std::crend(vals));
+    RT_ASSERT(vals_it != std::crend(vals),
+              "`vals_it` should not have reached the end of the array");
     ++vals_it;
     possible_output_variables.push_back(to_id);
 
     std::string expr = make_var(to_id) + " = "s;
 
-    assert(op_it != std::crend(ops));
+    RT_ASSERT(op_it != std::crend(ops), "`op_it` should not have reached the end of the array");
     const auto op = *op_it++;
 
     switch (op) {
       case NodeType::VAR:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got " << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += make_var(dep);
@@ -79,7 +85,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::ADD:
         {
-          assert(num_deps == -2 && "Expected two dependencies.");
+          RT_ASSERT(num_deps == -2, "Expected two dependencies, but got" << -num_deps);
           const auto dep1 = *(dep_it++);
           used_variables.insert(dep1);
           const auto dep2 = *(dep_it++);
@@ -90,7 +96,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::MUL:
         {
-          assert(num_deps == -2 && "Expected two dependencies.");
+          RT_ASSERT(num_deps == -2, "Expected two dependencies, but got " << -num_deps);
           const auto dep1 = *(dep_it++);
           used_variables.insert(dep1);
           const auto dep2 = *(dep_it++);
@@ -101,7 +107,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::INV:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got " << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += "1 / "s + make_var(dep);
@@ -110,7 +116,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::NEG:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got " << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += "-"s + make_var(dep);
@@ -119,7 +125,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::SQRT:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got" << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += "math.sqrt("s + make_var(dep) + ")"s;
@@ -128,7 +134,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::SIN:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got " << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += "math.sin("s + make_var(dep) + ")"s;
@@ -137,7 +143,7 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
 
       case NodeType::COS:
         {
-          assert(num_deps == -1 && "Expected one dependency.");
+          RT_ASSERT(num_deps == -1, "Expected one dependency, but got " << -num_deps);
           const auto dep = *(dep_it++);
           used_variables.insert(dep);
           expr += "math.cos("s + make_var(dep) + ")"s;
