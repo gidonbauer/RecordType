@@ -1,6 +1,7 @@
 #ifndef RT_RECORD_TYPE_HPP_
 #define RT_RECORD_TYPE_HPP_
 
+#include <algorithm>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
