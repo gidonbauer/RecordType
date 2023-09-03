@@ -3,6 +3,8 @@
 
 #include <iterator>
 
+#include "TypeTraits.hpp"
+
 namespace RT {
 
 // - Iterator reverser class -----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 #ifndef RT_TYPE_TRAITS_HPP_
 #define RT_TYPE_TRAITS_HPP_
 
+#include <iterator>
 #include <type_traits>
 
 namespace RT {
