@@ -45,12 +45,7 @@ class RecordType {
   constexpr RecordType(PassiveType value) noexcept
       : m_value(std::move(value)),
         m_id(UNREGISTERED),
-        m_node_type(NodeType::VAR) {
-    // TODO: This is probably unreachable
-    if (m_graph) {
-      m_id = m_graph->add_operation(m_node_type, m_value);
-    }
-  }
+        m_node_type(NodeType::VAR) {}
 
   // Copy constructor
   constexpr RecordType(const RecordType<PassiveType>& other) noexcept
