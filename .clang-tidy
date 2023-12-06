@@ -19,4 +19,7 @@ Checks:
   -bugprone-easily-swappable-parameters,
   -cert-dcl16-c
 
+CheckOptions:
+  {IgnoreMacros: true}
+
 HeaderFilterRegex: ".*"

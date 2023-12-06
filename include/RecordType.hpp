@@ -10,6 +10,7 @@
 #include <cmath>
 #endif  // RT_ONLY_FUNDAMENTAL
 
+#include "Definitions.hpp"
 #include "Graph.hpp"
 #include "Helper.hpp"
 #include "Macros.hpp"
@@ -21,13 +22,11 @@ namespace RT {
 template <typename>
 class Graph;
 
-constexpr int64_t UNREGISTERED = -1;
-
 template <typename PassiveType>
 class RecordType {
   mutable std::shared_ptr<Graph<PassiveType>> m_graph{};
   PassiveType m_value{};
-  mutable int64_t m_id{};
+  mutable id_t m_id{};
   mutable NodeType m_node_type{};
 
   // Private constructor, allows to choose node type; does not write to graph
@@ -54,8 +53,7 @@ class RecordType {
         m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
     if (m_graph) {
-      m_graph->add_dependencies(other.id());
-      m_id = m_graph->add_operation(m_node_type, m_value);
+      m_id = m_graph->add_operation(m_node_type, m_value, {other.id()});
     }
   }
 
@@ -66,8 +64,7 @@ class RecordType {
         m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
     if (m_graph) {
-      m_graph->add_dependencies(other.id());
-      m_id = m_graph->add_operation(m_node_type, m_value);
+      m_id = m_graph->add_operation(m_node_type, m_value, {other.id()});
     }
   }
 
@@ -86,8 +83,7 @@ class RecordType {
         other_id   = other.m_id;
       }
 
-      m_graph->add_dependencies(other_id);
-      m_id = m_graph->add_operation(m_node_type, m_value);
+      m_id = m_graph->add_operation(m_node_type, m_value, {other_id});
     }
     return *this;
   }
@@ -106,8 +102,7 @@ class RecordType {
         other_id   = other.m_id;
       }
 
-      m_graph->add_dependencies(other_id);
-      m_id = m_graph->add_operation(m_node_type, m_value);
+      m_id = m_graph->add_operation(m_node_type, m_value, {other_id});
     }
     return *this;
   }
@@ -119,10 +114,18 @@ class RecordType {
   constexpr void register_graph(std::shared_ptr<Graph<PassiveType>> graph) const noexcept {
     m_graph = graph;
     m_id    = m_graph->add_operation(m_node_type, m_value);
+    m_graph->mark_input(m_id);
+  }
+
+  // Mark variable as output
+  constexpr void mark_output() const noexcept {
+    RT_ASSERT(m_graph,
+              "Variable is not registered in a graph and can not be marked as an output variable.");
+    m_graph->mark_output(m_id);
   }
 
   [[nodiscard]] constexpr auto value() const noexcept -> const PassiveType& { return m_value; }
-  [[nodiscard]] constexpr auto id() const noexcept -> int64_t { return m_id; }
+  [[nodiscard]] constexpr auto id() const noexcept -> id_t { return m_id; }
   [[nodiscard]] constexpr auto node_type() const noexcept -> NodeType { return m_node_type; }
   [[nodiscard]] constexpr auto graph() const noexcept -> const Graph<PassiveType>* {
     return m_graph.get();
@@ -194,8 +197,7 @@ class RecordType {
         rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
       }
 
-      graph->add_dependencies(lhs.id(), rhs.id());
-      res.m_id    = graph->add_operation(res.node_type(), res.value());
+      res.m_id    = graph->add_operation(res.node_type(), res.value(), {lhs.id(), rhs.id()});
       res.m_graph = graph;
     }
     return res;
@@ -215,8 +217,7 @@ class RecordType {
         rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
       }
 
-      graph->add_dependencies(lhs.id(), rhs.id());
-      res.m_id    = graph->add_operation(res.node_type(), res.value());
+      res.m_id    = graph->add_operation(res.node_type(), res.value(), {lhs.id(), rhs.id()});
       res.m_graph = graph;
     }
     return res;
@@ -229,8 +230,7 @@ class RecordType {
                   "be the same as if we would be using just `PassiveType`");
     RecordType<PassiveType> res(static_cast<PassiveType>(1) / m_value, NodeType::INV);
     if (m_graph) {
-      m_graph->add_dependencies(id());
-      res.m_id    = m_graph->add_operation(res.node_type(), res.value());
+      res.m_id    = m_graph->add_operation(res.node_type(), res.value(), {id()});
       res.m_graph = m_graph;
     }
     return res;
@@ -240,7 +240,21 @@ class RecordType {
   [[nodiscard]] friend constexpr auto operator/(const RecordType<PassiveType>& lhs,
                                                 const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    return lhs * rhs.invert();
+    RecordType<PassiveType> res(lhs.value() / rhs.value(), NodeType::DIV);
+
+    auto graph = get_graph(lhs, rhs);
+    if (graph) {
+      if (lhs.id() == UNREGISTERED) {
+        lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
+      }
+      if (rhs.id() == UNREGISTERED) {
+        rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
+      }
+
+      res.m_id    = graph->add_operation(res.node_type(), res.value(), {lhs.id(), rhs.id()});
+      res.m_graph = graph;
+    }
+    return res;
   }
 
   // TODO: This does not work for unsigned integer types
@@ -250,8 +264,7 @@ class RecordType {
                   "if we would be using just `PassiveType`");
     RecordType<PassiveType> res(-m_value, NodeType::NEG);
     if (m_graph) {
-      m_graph->add_dependencies(id());
-      res.m_id    = m_graph->add_operation(res.node_type(), res.value());
+      res.m_id    = m_graph->add_operation(res.node_type(), res.value(), {id()});
       res.m_graph = m_graph;
     }
     return res;
@@ -261,7 +274,21 @@ class RecordType {
   [[nodiscard]] friend constexpr auto operator-(const RecordType<PassiveType>& lhs,
                                                 const RecordType<PassiveType>& rhs) noexcept
       -> RecordType<PassiveType> {
-    return lhs + -rhs;
+    RecordType<PassiveType> res(lhs.value() - rhs.value(), NodeType::SUB);
+
+    auto graph = get_graph(lhs, rhs);
+    if (graph) {
+      if (lhs.id() == UNREGISTERED) {
+        lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
+      }
+      if (rhs.id() == UNREGISTERED) {
+        rhs.m_id = graph->add_operation(rhs.node_type(), rhs.value());
+      }
+
+      res.m_id    = graph->add_operation(res.node_type(), res.value(), {lhs.id(), rhs.id()});
+      res.m_graph = graph;
+    }
+    return res;
   }
 
 #ifndef RT_ONLY_FUNDAMENTAL
@@ -269,8 +296,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::sqrt(x.m_value)), NodeType::SQRT);
     if (x.m_graph) {
-      x.m_graph->add_dependencies(x.id());
-      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value(), {x.id()});
       res.m_graph = x.m_graph;
     }
     return res;
@@ -280,8 +306,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::sin(x.m_value)), NodeType::SIN);
     if (x.m_graph) {
-      x.m_graph->add_dependencies(x.id());
-      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value(), {x.id()});
       res.m_graph = x.m_graph;
     }
     return res;
@@ -291,8 +316,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(static_cast<PassiveType>(std::cos(x.m_value)), NodeType::COS);
     if (x.m_graph) {
-      x.m_graph->add_dependencies(x.id());
-      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value());
+      res.m_id    = x.m_graph->add_operation(res.node_type(), res.value(), {x.id()});
       res.m_graph = x.m_graph;
     }
     return res;
@@ -335,6 +359,19 @@ constexpr void register_variable(const CT& container,
   std::for_each(std::cbegin(container), std::cend(container), [&](const auto& rt) {
     rt.register_graph(graph);
   });
+}
+
+// - Mark variable as output -----------------------------------------------------------------------
+template <typename T>
+requires is_record_type_v<T>
+constexpr void mark_output(const T& rt) noexcept {
+  rt.mark_output();
+}
+
+template <FwdContainerType CT>
+constexpr void mark_output(const CT& container) noexcept {
+  std::for_each(
+      std::cbegin(container), std::cend(container), [](const auto& rt) { rt.mark_output(); });
 }
 
 }  // namespace RT

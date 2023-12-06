@@ -27,6 +27,10 @@ auto main() -> int {
 
   std::cout << "[" << v(0).value() << ", " << v(1).value() << "]\n";
 
+  RT::mark_output(v);
+
+  graph->dump_data(std::cout);
+
   try {
     const std::string filename{"python/test.py"};
     RT::to_python(graph.get(), filename);

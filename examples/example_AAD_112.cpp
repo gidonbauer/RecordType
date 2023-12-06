@@ -26,5 +26,6 @@ auto main() -> int {
 
   f(v);
 
+  graph->dump_data(std::cout);
   save_to_dot(__FILE__, graph.get());
 }

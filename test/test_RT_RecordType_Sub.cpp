@@ -43,7 +43,7 @@ TEST(test_RT_RecordType_Sub, Int) {
     EXPECT_EQ(rt3.value(), 3);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::ADD);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::SUB);
   }
 
   {
@@ -59,7 +59,7 @@ TEST(test_RT_RecordType_Sub, Int) {
     EXPECT_EQ(rt3.value(), 3);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::ADD);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::SUB);
   }
 }
 
@@ -102,7 +102,7 @@ TEST(test_RT_RecordType_Sub, Double) {
     EXPECT_DOUBLE_EQ(rt3.value(), 3.0);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::ADD);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::SUB);
   }
 
   {
@@ -118,6 +118,6 @@ TEST(test_RT_RecordType_Sub, Double) {
     EXPECT_DOUBLE_EQ(rt3.value(), 3.0);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::ADD);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::SUB);
   }
 }

@@ -113,7 +113,8 @@ auto main() -> int {
   auto mat_inv = dynamic_matrix_inverse(mat);
 
   std::cout << "Matrix size: " << n << 'x' << n << '\n';
-  std::cout << "Number of operations (ADD, MUL, SQRT): " << graph->count_ops() << '\n';
+  std::cout << "Number of operations (ADD, MUL, SQRT): "
+            << graph->count_ops({RT::NodeType::ADD, RT::NodeType::MUL, RT::NodeType::SQRT}) << '\n';
   std::cout << "  Number ADD:  " << graph->count_op(RT::NodeType::ADD) << '\n';
   std::cout << "  Number MUL:  " << graph->count_op(RT::NodeType::MUL) << '\n';
   std::cout << "  Number SQRT: " << graph->count_op(RT::NodeType::SQRT) << '\n';

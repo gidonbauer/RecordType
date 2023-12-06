@@ -7,12 +7,14 @@
 
 namespace RT {
 
-// -------------------------------------------------------------------------------------------------
+// - Node type -------------------------------------------------------------------------------------
 enum class NodeType {
   LITERAL,
   VAR,
   ADD,
+  SUB,
   MUL,
+  DIV,
   INV,
   NEG,
   SQRT,
@@ -21,18 +23,9 @@ enum class NodeType {
   NODE_TYPE_COUNT,
 };
 
-// -------------------------------------------------------------------------------------------------
-[[nodiscard]] constexpr auto is_op(NodeType node_type) noexcept -> bool {
-  // TODO: Are NodeType::INV and NodeType::NEG operations that we want to count?
-  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
-                "Number of node types changed, are the new ones operations?");
-  return node_type == NodeType::ADD || node_type == NodeType::MUL || node_type == NodeType::SQRT ||
-         node_type == NodeType::SIN || node_type == NodeType::COS;
-}
-
-// -------------------------------------------------------------------------------------------------
+// - Node type to string ---------------------------------------------------------------------------
 constexpr auto to_string(NodeType node_type) noexcept -> std::string {
-  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 9,
+  static_assert(static_cast<int>(NodeType::NODE_TYPE_COUNT) == 11,
                 "Number of node types changed, add name to switch statement.");
   using namespace std::string_literals;
 
@@ -43,8 +36,12 @@ constexpr auto to_string(NodeType node_type) noexcept -> std::string {
       return "VAR"s;
     case NodeType::ADD:
       return "ADD"s;
+    case NodeType::SUB:
+      return "SUB"s;
     case NodeType::MUL:
       return "MUL"s;
+    case NodeType::DIV:
+      return "DIV"s;
     case NodeType::INV:
       return "INV"s;
     case NodeType::NEG:
@@ -60,12 +57,43 @@ constexpr auto to_string(NodeType node_type) noexcept -> std::string {
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// - Write node type to ostream --------------------------------------------------------------------
 auto operator<<(std::ostream& out, NodeType node_type) noexcept -> std::ostream& {
   out << to_string(node_type);
   return out;
 }
 
+// - Input or output type --------------------------------------------------------------------------
+enum class IOType {
+  INTERMEDIATE,
+  INPUT,
+  OUTPUT,
+  IO_TYPE_COUNT,
+};
+
+// - IO-type to string -----------------------------------------------------------------------------
+constexpr auto to_string(IOType io_type) noexcept -> std::string {
+  static_assert(static_cast<int>(IOType::IO_TYPE_COUNT) == 3,
+                "Number of io-types changed, add name to switch statement.");
+  using namespace std::string_literals;
+
+  switch (io_type) {
+    case IOType::INPUT:
+      return "INPUT"s;
+    case IOType::OUTPUT:
+      return "OUTPUT"s;
+    case IOType::INTERMEDIATE:
+      return "INTERMEDIATE"s;
+    default:
+      RT_PANIC("Unknown IOType: `" << static_cast<int>(io_type) << "`.");
+  }
+}
+
+// - Write io-type to ostream --------------------------------------------------------------------..
+auto operator<<(std::ostream& out, IOType io_type) noexcept -> std::ostream& {
+  out << to_string(io_type);
+  return out;
+}
 }  // namespace RT
 
 #endif  // RT_NODE_TYPE_HPP_

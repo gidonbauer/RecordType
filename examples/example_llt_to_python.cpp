@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 
+#define RT_GRAPH_CHECK_ADD_OP
 #include "RecordType.hpp"
 #include "ToPython.hpp"
 
@@ -49,7 +50,7 @@ auto main() -> int {
   using Type      = RT::RecordType<double>;
   using DecayType = RT::decay_record_type_t<Type>;
 
-  constexpr Eigen::Index n = 5;
+  constexpr Eigen::Index n = 2;
 
   Eigen::MatrixX<DecayType> decay_mat = generate_random_spd_matrix<DecayType>(n);
   auto graph                          = std::make_shared<RT::Graph<DecayType>>();
@@ -63,9 +64,17 @@ auto main() -> int {
 
   Eigen::MatrixX<Type> mat_inv = mat.llt().solve(Eigen::MatrixX<Type>::Identity(n, n));
 
-  std::ofstream out("llt_graph.txt");
-  RT_ASSERT(out, "`out` has to be a vaild ofstream.");
-  graph->dump_data(out);
+  for (Eigen::Index i = 0; i < n; ++i) {
+    for (Eigen::Index j = 0; j < n; ++j) {
+      RT::mark_output(mat_inv(i, j));
+    }
+  }
+
+  {
+    std::ofstream out("llt_graph.txt");
+    RT_ASSERT(out, "`out` has to be a vaild ofstream.");
+    graph->dump_data(out);
+  }
 
   try {
     const std::string filename{"python/llt.py"};

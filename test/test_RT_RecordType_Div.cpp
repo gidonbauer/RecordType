@@ -31,7 +31,7 @@ TEST(test_RT_RecordType_Div, Double) {
     EXPECT_DOUBLE_EQ(rt3.value(), 2.0);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::MUL);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::DIV);
   }
 
   {
@@ -47,6 +47,6 @@ TEST(test_RT_RecordType_Div, Double) {
     EXPECT_DOUBLE_EQ(rt3.value(), 2.0);
     EXPECT_NE(rt3.id(), rt1.id());
     EXPECT_NE(rt3.id(), rt2.id());
-    EXPECT_EQ(rt3.node_type(), RT::NodeType::MUL);
+    EXPECT_EQ(rt3.node_type(), RT::NodeType::DIV);
   }
 }
