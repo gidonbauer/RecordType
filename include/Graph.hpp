@@ -90,7 +90,7 @@ class Graph {
   }
 
   // -----------------------------------------------------------------------------------------------
-  // TODO: Use options
+  // TODO: Think about possible options
   void to_dot(const std::string& file_name) const {
     std::ofstream out(file_name);
     if (!out) {
