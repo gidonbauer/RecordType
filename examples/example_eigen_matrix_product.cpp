@@ -25,9 +25,5 @@ auto main() -> int {
 
   Eigen::MatrixX<Type> res = lhs * rhs;
 
-  RT::GraphToDotOptions opt{
-      .print_node_id  = true,
-      .use_op_symbols = true,
-  };
-  save_to_dot(__FILE__, graph.get(), opt);
+  save_to_dot(__FILE__, graph.get());
 }

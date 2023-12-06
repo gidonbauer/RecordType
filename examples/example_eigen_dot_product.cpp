@@ -18,11 +18,5 @@ auto main() -> int {
 
   [[maybe_unused]] Type res = vec1.dot(vec2);
 
-  RT::GraphToDotOptions opt{
-      .unique_literals      = true,
-      .number_only_literals = true,
-      .print_node_id        = true,
-      .use_op_symbols       = true,
-  };
-  save_to_dot(__FILE__, graph.get(), opt);
+  save_to_dot(__FILE__, graph.get());
 }

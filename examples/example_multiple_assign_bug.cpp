@@ -21,8 +21,5 @@ auto main() -> int {
   RT_DEBUG_PRINT(rt2.id());
   RT_DEBUG_PRINT(rt2.node_type());
 
-  RT::GraphToDotOptions opt{
-      .print_node_id = true,
-  };
-  save_to_dot(__FILE__, graph.get(), opt);
+  save_to_dot(__FILE__, graph.get());
 }

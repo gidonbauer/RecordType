@@ -84,11 +84,5 @@ auto main() -> int {
               << '\n';
   }
 
-  RT::GraphToDotOptions opt{
-      .unique_literals      = true,
-      .number_only_literals = true,
-      .print_node_id        = false,
-      .use_op_symbols       = false,
-  };
-  save_to_dot(__FILE__, graph.get(), opt);
+  save_to_dot(__FILE__, graph.get());
 }

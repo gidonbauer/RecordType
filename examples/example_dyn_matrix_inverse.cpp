@@ -119,13 +119,6 @@ auto main() -> int {
   std::cout << "  Number MUL:  " << graph->count_op(RT::NodeType::MUL) << '\n';
   std::cout << "  Number SQRT: " << graph->count_op(RT::NodeType::SQRT) << '\n';
 
-  RT::GraphToDotOptions opt{
-      .unique_literals      = true,
-      .number_only_literals = true,
-      .print_node_id        = false,
-      .use_op_symbols       = false,
-  };
-
   // Check correctness
   {
     Eigen::MatrixX<DecayType> decay_mat_inv(n, n);
@@ -139,5 +132,5 @@ auto main() -> int {
               << '\n';
   }
 
-  save_to_dot(__FILE__, graph.get(), opt);
+  save_to_dot(__FILE__, graph.get());
 }
