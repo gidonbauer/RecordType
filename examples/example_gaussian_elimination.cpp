@@ -2,7 +2,9 @@
 
 #include <Eigen/Dense>
 
+#include "EigenInterop.hpp"
 #include "RecordType.hpp"
+#include "ToPython.hpp"
 
 #include "save_to_dot.hpp"
 
@@ -47,9 +49,8 @@ auto main() -> int {
 
   auto graph = std::make_shared<RT::Graph<Passive_t>>();
 
-  constexpr int N = 2;
-  Eigen::Matrix<Rec_t, Eigen::Dynamic, Eigen::Dynamic> A(N, N);
-  A << 1.0, 2.0, 3.0, 4.0;
+  constexpr int N         = 100;
+  Eigen::MatrixX<Rec_t> A = Eigen::MatrixX<Passive_t>::Random(N, N);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       RT::register_variable(A(i, j), graph);
@@ -57,14 +58,13 @@ auto main() -> int {
     }
   }
 
-  Eigen::Vector<Rec_t, Eigen::Dynamic> b(N);
-  b << 5.0, 6.0;
+  Eigen::VectorX<Rec_t> b = Eigen::VectorX<Rec_t>::Random(N);
   RT::register_variable(b, graph);
   for (int i = 0; i < N; ++i) {
     RT::add_name(b(i), std::format("b({0})", i));
   }
 
-  Eigen::Vector<Rec_t, N> x = gaussian_elimination(A, b);
+  Eigen::VectorX<Rec_t> x = gaussian_elimination(A, b);
   RT::mark_output(x);
   for (int i = 0; i < N; ++i) {
     RT::add_name(x(i), std::format("x({0})", i));
@@ -91,5 +91,13 @@ auto main() -> int {
   }
   std::cout << '\n';
 
+  try {
+    const std::string filename{"python/gaussian_elimination.py"};
+    RT::to_python(graph.get(), filename);
+    std::cout << "Wrote Graph code to `" << filename << "`.\n";
+  } catch (const std::exception& e) {
+    std::cerr << "[ERROR] " << e.what() << '\n';
+    std::exit(1);
+  }
   save_to_dot(__FILE__, graph.get());
 }
