@@ -20,6 +20,7 @@ set(executables
         test_RT_Graph_Intermediate_Register
         test_RT_TypeTraits
         test_RT_assert
+        test_RT_shared_pointer_segfault
 )
 
 include(GoogleTest)
@@ -34,7 +35,8 @@ foreach(exec ${executables})
     target_link_options(${exec} PRIVATE ${RT_LINK_FLAGS})
 
     # - Define include path -----
-    target_include_directories(${exec} PRIVATE ${CMAKE_SOURCE_DIR}/include/)
+    target_include_directories(${exec}        PRIVATE ${CMAKE_SOURCE_DIR}/include/)
+    target_include_directories(${exec} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/ThirdParty/)
 
     # - Link libraries ---------
     target_link_libraries(${exec} PRIVATE GTest::gtest_main)
