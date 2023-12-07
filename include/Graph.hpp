@@ -5,6 +5,7 @@
 #include <format>
 #include <fstream>
 #include <numeric>
+#include <string>
 #include <vector>
 
 #include "Definitions.hpp"
@@ -23,6 +24,7 @@ struct Node {
   IOType io_type{};
   PassiveType value{};
   std::vector<id_t> dependencies{};
+  std::string name{};
 };
 
 }  // namespace internal
@@ -51,7 +53,8 @@ class Graph {
                                          << m_nodes.size() - 1UL);
     }
     const auto new_idx = static_cast<id_t>(m_nodes.size());
-    m_nodes.emplace_back(type, IOType::INTERMEDIATE, std::move(value), std::move(dependencies));
+    m_nodes.emplace_back(
+        type, IOType::INTERMEDIATE, std::move(value), std::move(dependencies), std::string{});
     return new_idx;
   }
 
@@ -71,6 +74,15 @@ class Graph {
     RT_ASSERT(static_cast<size_t>(id) < m_nodes.size(),
               "id " << id << " is not in graph, max. id is " << m_nodes.size() - 1UL);
     m_nodes[static_cast<size_t>(id)].io_type = IOType::OUTPUT;
+  }
+
+  // -----------------------------------------------------------------------------------------------
+  constexpr void add_name(id_t id, const std::string& name) noexcept {
+    RT_ASSERT(m_nodes.size() > 0UL, "Graph is empty, cannot register any variable as output.");
+    RT_ASSERT(id >= static_cast<id_t>(0), "Variable is not registerd in graph.");
+    RT_ASSERT(static_cast<size_t>(id) < m_nodes.size(),
+              "id " << id << " is not in graph, max. id is " << m_nodes.size() - 1UL);
+    m_nodes[static_cast<size_t>(id)].name = name;
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -97,24 +109,45 @@ class Graph {
       throw std::runtime_error("Could not open file `" + file_name + "`: " + std::strerror(errno));
     }
 
-    // Begin Graph
-    out << "digraph {\n";
-    id_t id_count = 0;
-    for (const auto& node : m_nodes) {
-      out << std::format("  node_{0} [label=\"node_{0} ({1}, {2})\"];\n",
-                         id_count,
-                         to_string(node.type),
-                         node.value);
-      int dep_count = 0;
-      for (id_t dep_id : node.dependencies) {
-        out << std::format(
-            "  node_{0} -> node_{1} [label=\"{2}\"];\n", dep_id, id_count, dep_count);
-        ++dep_count;
+    constexpr auto add_name = [](id_t id, const std::string& name) {
+      if (name.empty()) {
+        return std::format("node_{0}", id);
       }
-      ++id_count;
-    }
+      return name;
+    };
 
-    // End graph
+    constexpr auto add_color = [](IOType io_type) constexpr {
+      switch (io_type) {
+        case RT::IOType::INPUT:
+          return R"(, color="lightblue", style="filled")";
+        case RT::IOType::OUTPUT:
+          return R"(, color="orangered", style="filled")";
+        case RT::IOType::INTERMEDIATE:
+          return "";
+        default:
+          RT_PANIC("Unknown io type " << static_cast<int>(io_type));
+      }
+    };
+
+    out << "digraph {\n";
+    {
+      id_t id_count = 0;
+      for (const auto& node : m_nodes) {
+        out << std::format("  node_{0} [label=\"{1} ({2}, {3})\"{4}];\n",
+                           id_count,
+                           add_name(id_count, node.name),
+                           to_string(node.type),
+                           node.value,
+                           add_color(node.io_type));
+        int dep_count = 0;
+        for (id_t dep_id : node.dependencies) {
+          out << std::format(
+              "  node_{0} -> node_{1} [label=\"{2}\"];\n", dep_id, id_count, dep_count);
+          ++dep_count;
+        }
+        ++id_count;
+      }
+    }
     out << "}\n";
   }
 
@@ -132,6 +165,7 @@ class Graph {
         out << dep << ", ";
       }
       out << "]\n";
+      out << "  name = \"" << node.name << "\"\n";
       out << "}\n";
     }
   }

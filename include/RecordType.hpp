@@ -124,6 +124,13 @@ class RecordType {
     m_graph->mark_output(m_id);
   }
 
+  // Mark variable as output
+  constexpr void add_name(const std::string& name) const noexcept {
+    RT_ASSERT(m_graph,
+              "Variable is not registered in a graph and can not be marked as an output variable.");
+    m_graph->add_name(m_id, name);
+  }
+
   [[nodiscard]] constexpr auto value() const noexcept -> const PassiveType& { return m_value; }
   [[nodiscard]] constexpr auto id() const noexcept -> id_t { return m_id; }
   [[nodiscard]] constexpr auto node_type() const noexcept -> NodeType { return m_node_type; }
@@ -341,8 +348,17 @@ class RecordType {
 
 template <typename PassiveType>
 auto operator<<(std::ostream& out, const RecordType<PassiveType>& t) noexcept -> std::ostream& {
-  out << "node_" << t.id() << " (" << t.node_type() << ", " << t.value() << ")";
-  return out;
+  try {
+    if (t.graph() && !t.graph()->nodes().at(static_cast<size_t>(t.id())).name.empty()) {
+      out << t.graph()->nodes().at(static_cast<size_t>(t.id())).name << " (" << t.node_type()
+          << ", " << t.value() << ")";
+    } else {
+      out << "node_" << t.id() << " (" << t.node_type() << ", " << t.value() << ")";
+    }
+    return out;
+  } catch (const std::exception& e) {
+    RT_PANIC("Invalid index into nodes array of graph: " << e.what());
+  }
 }
 
 // - Register record type --------------------------------------------------------------------------
@@ -372,6 +388,13 @@ template <FwdContainerType CT>
 constexpr void mark_output(const CT& container) noexcept {
   std::for_each(
       std::cbegin(container), std::cend(container), [](const auto& rt) { rt.mark_output(); });
+}
+
+// - Add name to variable --------------------------------------------------------------------------
+template <typename T>
+requires is_record_type_v<T>
+constexpr void add_name(const T& rt, const std::string& name) noexcept {
+  rt.add_name(name);
 }
 
 }  // namespace RT
