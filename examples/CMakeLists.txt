@@ -14,6 +14,7 @@ set(executables
         example_dyn_matrix_inverse
         example_eigen_llt
         example_AAD_112
+        example_gaussian_elimination
         # example_matrix_function
         example_to_python
         example_llt_to_python
