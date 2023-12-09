@@ -1,7 +1,12 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/examples/")
 
-set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -O3)
-set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -O3)
+if(RT_DEBUG_BUILD)
+  set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer)
+  set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -g -O0 -fsanitize=address,undefined)
+else()
+  set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -O3)
+  set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -O3)
+endif()
 
 set(executables
         example_dot_product

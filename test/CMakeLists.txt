@@ -1,8 +1,7 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/test/")
 
-set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -O0 -fsanitize=address,undefined -fno-omit-frame-pointer)
-set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -O0 -fsanitize=address,undefined)
-
+set(RT_CXX_FLAGS  ${RT_CXX_FLAGS}  -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer)
+set(RT_LINK_FLAGS ${RT_LINK_FLAGS} -g -O0 -fsanitize=address,undefined)
 
 set(executables
         test_RT_RecordType_Construct

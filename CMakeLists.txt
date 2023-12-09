@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(RT_CXX_FLAGS -Wall -Wextra -pedantic -Wconversion -Wshadow)
 set(RT_LINK_FLAGS)
 
+option(RT_DEBUG_BUILD "Make debug build for examples" OFF)
+
 # - Check if `-march=native` is available ---------------------------------------------------------
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
