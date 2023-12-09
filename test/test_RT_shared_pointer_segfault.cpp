@@ -1,70 +1,43 @@
 #include <gtest/gtest.h>
 
+#include <vector>
+
 #include <Eigen/Dense>
 
 #include "EigenInterop.hpp"
 #include "RecordType.hpp"
-#include "ToPython.hpp"
 
-template <typename T, int N>
-constexpr auto gaussian_elimination(Eigen::Matrix<T, N, N> A, Eigen::Vector<T, N> b)
-    -> Eigen::Vector<T, N> {
-  if constexpr (N == Eigen::Dynamic) {
-    RT_ASSERT(A.rows() == A.cols(),
-              "A must be square, but dimension is (" << A.rows() << ", " << A.cols() << ")");
-    RT_ASSERT(A.rows() == b.rows(),
-              "Dimension of A and b must match, but dimensions are ("
-                  << A.rows() << ", " << A.cols() << ") and " << b.rows());
-  }
-  const auto n = A.rows();
-
-  for (Eigen::Index i = 0; i < n; ++i) {
-    for (Eigen::Index j = i + 1; j < n; ++j) {
-      const auto m = -(A(j, i) / A(i, i));
-      b(j) += m * b(i);
-      for (Eigen::Index k = i; k < n; ++k) {
-        A(j, k) += m * A(i, k);
-      }
-    }
-  }
-
-  Eigen::Vector<T, N> x(n);
-
-  for (Eigen::Index i = n - 1; i >= 0; --i) {
-    auto bi = b(i);
-    for (Eigen::Index j = n - 1; j > i; --j) {
-      bi -= x(j) * A(i, j);
-    }
-    x(i) = bi / A(i, i);
-  }
-
-  return x;
-}
-
-TEST(test_shared_pointer_segfault, graph_bug) {
+TEST(test_shared_pointer_segfault, uninitialized_data) {
   using Passive_t = double;
   using Rec_t     = RT::RecordType<Passive_t>;
 
-  auto graph = std::make_shared<RT::Graph<Passive_t>>();
+  Rec_t* rec = static_cast<Rec_t*>(std::malloc(sizeof(Rec_t)));
+  new (rec) Rec_t();  // Dirty hack!!!
+  *rec = 3.14;
+  delete rec;
+}
 
-  constexpr int N         = 100;
-  Eigen::MatrixX<Rec_t> A = Eigen::MatrixX<Passive_t>::Random(N, N);
-  for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) {
-      RT::register_variable(A(i, j), graph);
-      RT::add_name(A(i, j), std::format("A({0}, {1})", i, j));
-    }
-  }
+/*
+  Dynamic eigen matricies leave entries uninitialized. If we then assign a value to those
+  uninitialized entries, we try to read the reference-count of the shared pointer from a random
+  location, because the pointer was not properly initialized to a nullptr. This leads to a segfault.
+    -> Workaround: Use Eigen::Map or static Eigen::Matrix
+*/
+TEST(test_shared_pointer_segfault, dynamic_eigen_matrix_workaround_map) {
+  using Passive_t = double;
+  using Rec_t     = RT::RecordType<Passive_t>;
 
-  Eigen::VectorX<Rec_t> b = Eigen::VectorX<Rec_t>::Random(N);
-  RT::register_variable(b, graph);
-  for (int i = 0; i < N; ++i) {
-    RT::add_name(b(i), std::format("b({0})", i));
-  }
+  constexpr int N = 100;
 
-  Eigen::VectorX<Rec_t> x = gaussian_elimination(A, b);
-  RT::mark_output(x);
-  for (int i = 0; i < N; ++i) {
-    RT::add_name(x(i), std::format("x({0})", i));
-  }
+  std::vector<Rec_t> data(N * N);
+  Eigen::Map<Eigen::Matrix<Rec_t, N, N>> mat(data.data(), N, N);
+  mat = Eigen::MatrixX<Passive_t>::Random(N, N);
+}
+
+TEST(test_shared_pointer_segfault, dynamic_eigen_matrix_workaround_static) {
+  using Passive_t = double;
+  using Rec_t     = RT::RecordType<Passive_t>;
+
+  constexpr int N                = 10;
+  Eigen::Matrix<Rec_t, N, N> mat = Eigen::MatrixX<Passive_t>::Random(N, N);
 }

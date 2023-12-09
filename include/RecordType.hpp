@@ -74,7 +74,7 @@ class RecordType {
     // Keep copy of other id in case of self assignment
     auto other_id = other.id();
 
-    m_graph     = get_graph(*this, other);
+    m_graph     = get_graph(m_graph, other.m_graph);
     m_value     = other.m_value;
     m_node_type = NodeType::VAR;
     if (m_graph) {
@@ -92,7 +92,7 @@ class RecordType {
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
     auto other_id = other.id();
 
-    m_graph     = get_graph(*this, other);
+    m_graph     = get_graph(m_graph, other.m_graph);
     m_value     = std::move(other.m_value);
     m_node_type = NodeType::VAR;
     if (m_graph) {
@@ -139,21 +139,22 @@ class RecordType {
   }
 
  private:
-  [[nodiscard]] static constexpr auto get_graph(const RecordType& lhs,
-                                                const RecordType& rhs) noexcept
+  [[nodiscard]] static constexpr auto
+  get_graph(std::shared_ptr<Graph<PassiveType>> lhs_graph,
+            std::shared_ptr<Graph<PassiveType>> rhs_graph) noexcept
       -> std::shared_ptr<Graph<PassiveType>> {
-    if (lhs.m_graph != rhs.m_graph) {
-      if (lhs.m_graph && rhs.m_graph) {
+    if (lhs_graph != rhs_graph) {
+      if (lhs_graph && rhs_graph) {
         return nullptr;
-      } else if (lhs.m_graph) {
-        return lhs.m_graph;
-      } else if (rhs.m_graph) {
-        return rhs.m_graph;
+      } else if (lhs_graph) {
+        return lhs_graph;
+      } else if (rhs_graph) {
+        return rhs_graph;
       } else {
         RT_PANIC("Unreachable.");
       }
     }
-    return lhs.m_graph;
+    return lhs_graph;
   }
 
  public:
@@ -195,7 +196,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(lhs.value() + rhs.value(), NodeType::ADD);
 
-    auto graph = get_graph(lhs, rhs);
+    auto graph = get_graph(lhs.m_graph, rhs.m_graph);
     if (graph) {
       if (lhs.id() == UNREGISTERED) {
         lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
@@ -215,7 +216,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(lhs.value() * rhs.value(), NodeType::MUL);
 
-    auto graph = get_graph(lhs, rhs);
+    auto graph = get_graph(lhs.m_graph, rhs.m_graph);
     if (graph) {
       if (lhs.id() == UNREGISTERED) {
         lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
@@ -249,7 +250,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(lhs.value() / rhs.value(), NodeType::DIV);
 
-    auto graph = get_graph(lhs, rhs);
+    auto graph = get_graph(lhs.m_graph, rhs.m_graph);
     if (graph) {
       if (lhs.id() == UNREGISTERED) {
         lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
@@ -283,7 +284,7 @@ class RecordType {
       -> RecordType<PassiveType> {
     RecordType<PassiveType> res(lhs.value() - rhs.value(), NodeType::SUB);
 
-    auto graph = get_graph(lhs, rhs);
+    auto graph = get_graph(lhs.m_graph, rhs.m_graph);
     if (graph) {
       if (lhs.id() == UNREGISTERED) {
         lhs.m_id = graph->add_operation(lhs.node_type(), lhs.value());
