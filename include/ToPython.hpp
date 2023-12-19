@@ -27,18 +27,15 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
   std::vector<PassiveType> input_values{};
   std::vector<id_t> output_variables{};
   std::vector<PassiveType> output_values{};
-  {
-    id_t id_count = 0;
-    for (const auto& node : graph->nodes()) {
-      if (node.io_type == IOType::INPUT) {
-        input_variables.push_back(id_count);
-        input_values.push_back(node.value);
-      } else if (node.io_type == IOType::OUTPUT) {
-        output_variables.push_back(id_count);
-        output_values.push_back(node.value);
-      }
-      ++id_count;
+  for (id_t id_count = 0; const auto& node : graph->nodes()) {
+    if (node.io_type == IOType::INPUT) {
+      input_variables.push_back(id_count);
+      input_values.push_back(node.value);
+    } else if (node.io_type == IOType::OUTPUT) {
+      output_variables.push_back(id_count);
+      output_values.push_back(node.value);
     }
+    ++id_count;
   }
   // - Find input and output variables -----------------------------------------
 
@@ -56,108 +53,100 @@ void to_python(const Graph<PassiveType>* graph, const std::string& filename) {
   }
   out << "):\n";
 
-  {
-    id_t id_count = 0;
-    for (const auto& node : graph->nodes()) {
-      const auto num_deps = node.dependencies.size();
-      if (node.io_type == IOType::INPUT) {
-        ++id_count;
-        continue;
-      }
-
-      switch (node.type) {
-        case NodeType::LITERAL:
-          RT_TODO("Node type `" << node.type << "` is not implemented yet.");
-          break;
-        case NodeType::VAR:
-          {
-            RT_ASSERT(num_deps == 0UL || num_deps == 1UL,
-                      "Expected node to have zero or one dependencies, but got " << num_deps);
-            if (num_deps == 0UL) {
-              out << single_indent << make_var(id_count) << " = " << node.value << '\n';
-            } else {
-              out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
-                  << '\n';
-            }
-          }
-          break;
-        case NodeType::ADD:
-          {
-            RT_ASSERT(num_deps == 2UL,
-                      "Expected node to have two dependencies, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
-                << " + " << make_var(node.dependencies[1]) << '\n';
-          }
-          break;
-        case NodeType::SUB:
-          {
-            RT_ASSERT(num_deps == 2UL,
-                      "Expected node to have two dependencies, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
-                << " - " << make_var(node.dependencies[1]) << '\n';
-          }
-          break;
-        case NodeType::MUL:
-          {
-            RT_ASSERT(num_deps == 2UL,
-                      "Expected node to have two dependencies, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
-                << " * " << make_var(node.dependencies[1]) << '\n';
-          }
-          break;
-        case NodeType::DIV:
-          {
-            RT_ASSERT(num_deps == 2UL,
-                      "Expected node to have two dependencies, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
-                << " / " << make_var(node.dependencies[1]) << '\n';
-          }
-          break;
-        case NodeType::INV:
-          {
-            RT_ASSERT(num_deps == 1UL,
-                      "Expected node to have one dependency, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = 1/" << make_var(node.dependencies[0])
-                << '\n';
-          }
-          break;
-        case NodeType::NEG:
-          {
-            RT_ASSERT(num_deps == 1UL,
-                      "Expected node to have one dependency, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = -" << make_var(node.dependencies[0])
-                << '\n';
-          }
-          break;
-        case NodeType::SQRT:
-          {
-            RT_ASSERT(num_deps == 1UL,
-                      "Expected node to have one dependency, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = math.sqrt("
-                << make_var(node.dependencies[0]) << ")\n";
-          }
-          break;
-        case NodeType::SIN:
-          {
-            RT_ASSERT(num_deps == 1UL,
-                      "Expected node to have one dependency, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = math.sin("
-                << make_var(node.dependencies[0]) << ")\n";
-          }
-          break;
-        case NodeType::COS:
-          {
-            RT_ASSERT(num_deps == 1UL,
-                      "Expected node to have one dependency, but got " << num_deps);
-            out << single_indent << make_var(id_count) << " = math.cos("
-                << make_var(node.dependencies[0]) << ")\n";
-          }
-          break;
-        default:
-          RT_PANIC("Unknown node type `" << node.type << "`.");
-      }
+  for (id_t id_count = 0; const auto& node : graph->nodes()) {
+    const auto num_deps = node.dependencies.size();
+    if (node.io_type == IOType::INPUT) {
       ++id_count;
+      continue;
     }
+
+    switch (node.type) {
+      case NodeType::LITERAL:
+        RT_TODO("Node type `" << node.type << "` is not implemented yet.");
+        break;
+      case NodeType::VAR:
+        {
+          RT_ASSERT(num_deps == 0UL || num_deps == 1UL,
+                    "Expected node to have zero or one dependencies, but got " << num_deps);
+          if (num_deps == 0UL) {
+            out << single_indent << make_var(id_count) << " = " << node.value << '\n';
+          } else {
+            out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
+                << '\n';
+          }
+        }
+        break;
+      case NodeType::ADD:
+        {
+          RT_ASSERT(num_deps == 2UL,
+                    "Expected node to have two dependencies, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
+              << " + " << make_var(node.dependencies[1]) << '\n';
+        }
+        break;
+      case NodeType::SUB:
+        {
+          RT_ASSERT(num_deps == 2UL,
+                    "Expected node to have two dependencies, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
+              << " - " << make_var(node.dependencies[1]) << '\n';
+        }
+        break;
+      case NodeType::MUL:
+        {
+          RT_ASSERT(num_deps == 2UL,
+                    "Expected node to have two dependencies, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
+              << " * " << make_var(node.dependencies[1]) << '\n';
+        }
+        break;
+      case NodeType::DIV:
+        {
+          RT_ASSERT(num_deps == 2UL,
+                    "Expected node to have two dependencies, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = " << make_var(node.dependencies[0])
+              << " / " << make_var(node.dependencies[1]) << '\n';
+        }
+        break;
+      case NodeType::INV:
+        {
+          RT_ASSERT(num_deps == 1UL, "Expected node to have one dependency, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = 1/" << make_var(node.dependencies[0])
+              << '\n';
+        }
+        break;
+      case NodeType::NEG:
+        {
+          RT_ASSERT(num_deps == 1UL, "Expected node to have one dependency, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = -" << make_var(node.dependencies[0])
+              << '\n';
+        }
+        break;
+      case NodeType::SQRT:
+        {
+          RT_ASSERT(num_deps == 1UL, "Expected node to have one dependency, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = math.sqrt("
+              << make_var(node.dependencies[0]) << ")\n";
+        }
+        break;
+      case NodeType::SIN:
+        {
+          RT_ASSERT(num_deps == 1UL, "Expected node to have one dependency, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = math.sin("
+              << make_var(node.dependencies[0]) << ")\n";
+        }
+        break;
+      case NodeType::COS:
+        {
+          RT_ASSERT(num_deps == 1UL, "Expected node to have one dependency, but got " << num_deps);
+          out << single_indent << make_var(id_count) << " = math.cos("
+              << make_var(node.dependencies[0]) << ")\n";
+        }
+        break;
+      default:
+        RT_PANIC("Unknown node type `" << node.type << "`.");
+    }
+    ++id_count;
   }
 
   out << single_indent << "return [";

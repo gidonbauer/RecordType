@@ -130,23 +130,20 @@ class Graph {
     };
 
     out << "digraph {\n";
-    {
-      id_t id_count = 0;
-      for (const auto& node : m_nodes) {
-        out << std::format("  node_{0} [label=\"{1} ({2}, {3})\"{4}];\n",
-                           id_count,
-                           add_name(id_count, node.name),
-                           to_string(node.type),
-                           node.value,
-                           add_color(node.io_type));
-        int dep_count = 0;
-        for (id_t dep_id : node.dependencies) {
-          out << std::format(
-              "  node_{0} -> node_{1} [label=\"{2}\"];\n", dep_id, id_count, dep_count);
-          ++dep_count;
-        }
-        ++id_count;
+    for (id_t id_count = 0; const auto& node : m_nodes) {
+      out << std::format("  node_{0} [label=\"{1} ({2}, {3})\"{4}];\n",
+                         id_count,
+                         add_name(id_count, node.name),
+                         to_string(node.type),
+                         node.value,
+                         add_color(node.io_type));
+      int dep_count = 0;
+      for (id_t dep_id : node.dependencies) {
+        out << std::format(
+            "  node_{0} -> node_{1} [label=\"{2}\"];\n", dep_id, id_count, dep_count);
+        ++dep_count;
       }
+      ++id_count;
     }
     out << "}\n";
   }
