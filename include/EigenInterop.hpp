@@ -17,10 +17,10 @@ struct NumTraits<RT::RecordType<PassiveType>> : NumTraits<PassiveType> {
     IsComplex             = NumTraits<PassiveType>::IsComplex,
     IsInteger             = NumTraits<PassiveType>::IsInteger,
     IsSigned              = NumTraits<PassiveType>::IsSigned,
-    RequireInitialization = NumTraits<PassiveType>::RequireInitialization,
+    RequireInitialization = 1,
     ReadCost              = NumTraits<PassiveType>::ReadCost,
-    AddCost               = NumTraits<PassiveType>::AddCost,
-    MulCost               = NumTraits<PassiveType>::MulCost,
+    AddCost               = 2 * NumTraits<PassiveType>::AddCost,
+    MulCost               = 2 * NumTraits<PassiveType>::MulCost,
   };
 };
 

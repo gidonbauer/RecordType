@@ -24,7 +24,7 @@ class Graph;
 
 template <typename PassiveType>
 class RecordType {
-  mutable std::shared_ptr<Graph<PassiveType>> m_graph{};
+  mutable std::shared_ptr<Graph<PassiveType>> m_graph = nullptr;
   PassiveType m_value{};
   mutable id_t m_id{};
   mutable NodeType m_node_type{};
@@ -33,18 +33,30 @@ class RecordType {
   constexpr RecordType(PassiveType value, NodeType node_type) noexcept
       : m_value(std::move(value)),
         m_id(UNREGISTERED),
-        m_node_type(node_type) {}
+        m_node_type(node_type) {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Private constructor\n";
+#endif  //  RT_DEBUG_CTOR_CALL
+  }
 
  public:
   // Public default constructor
   constexpr RecordType() noexcept
-      : RecordType(static_cast<PassiveType>(0)) {}
+      : RecordType(static_cast<PassiveType>(0)) {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Default constructor\n";
+#endif  //  RT_DEBUG_CTOR_CALL
+  }
 
   // Public constructor, gets value
   constexpr RecordType(PassiveType value) noexcept
       : m_value(std::move(value)),
         m_id(UNREGISTERED),
-        m_node_type(NodeType::VAR) {}
+        m_node_type(NodeType::VAR) {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Constructor from PassiveType\n";
+#endif  //  RT_DEBUG_CTOR_CALL
+  }
 
   // Copy constructor
   constexpr RecordType(const RecordType<PassiveType>& other) noexcept
@@ -52,6 +64,9 @@ class RecordType {
         m_value(other.m_value),
         m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Copy constructor\n";
+#endif  //  RT_DEBUG_CTOR_CALL
     if (m_graph) {
       m_id = m_graph->add_operation(m_node_type, m_value, {other.id()});
     }
@@ -63,6 +78,9 @@ class RecordType {
         m_value(std::move(other.m_value)),
         m_id(UNREGISTERED),
         m_node_type(NodeType::VAR) {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Move constructor\n";
+#endif  //  RT_DEBUG_CTOR_CALL
     if (m_graph) {
       m_id = m_graph->add_operation(m_node_type, m_value, {other.id()});
     }
@@ -71,6 +89,10 @@ class RecordType {
   // Copy assign operator
   constexpr auto operator=(const RecordType<PassiveType>& other) noexcept
       -> RecordType<PassiveType>& {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Copy assign operator\n";
+#endif  //  RT_DEBUG_CTOR_CALL
+
     // Keep copy of other id in case of self assignment
     auto other_id = other.id();
 
@@ -90,6 +112,10 @@ class RecordType {
 
   // Move assign operator
   constexpr auto operator=(RecordType<PassiveType>&& other) noexcept -> RecordType<PassiveType>& {
+#ifdef RT_DEBUG_CTOR_CALL
+    std::cout << RT_ERROR_LOC() << ": Move assign operator\n";
+#endif  //  RT_DEBUG_CTOR_CALL
+
     auto other_id = other.id();
 
     m_graph     = get_graph(m_graph, other.m_graph);

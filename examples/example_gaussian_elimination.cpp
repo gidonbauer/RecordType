@@ -9,16 +9,14 @@
 #include "save_to_dot.hpp"
 
 template <typename MT, typename VT>
-constexpr void gaussian_elimination(MT A, VT b, VT& x) {
+[[nodiscard]] constexpr auto gaussian_elimination(MT A, VT b) -> VT {
   RT_ASSERT(A.rows() == A.cols(),
             "A must be square, but dimension is (" << A.rows() << ", " << A.cols() << ")");
   RT_ASSERT(A.rows() == b.rows(),
             "Dimension of A and b must match, but dimensions are (" << A.rows() << ", " << A.cols()
                                                                     << ") and " << b.rows());
-  RT_ASSERT(A.rows() == x.rows(),
-            "Dimension of A and x must match, but dimensions are (" << A.rows() << ", " << A.cols()
-                                                                    << ") and " << x.rows());
   const auto n = A.rows();
+  VT x(n);
 
   for (Eigen::Index i = 0; i < n; ++i) {
     for (Eigen::Index j = i + 1; j < n; ++j) {
@@ -37,6 +35,8 @@ constexpr void gaussian_elimination(MT A, VT b, VT& x) {
     }
     x(i) = bi / A(i, i);
   }
+
+  return x;
 }
 
 auto main() -> int {
@@ -45,10 +45,8 @@ auto main() -> int {
 
   auto graph = std::make_shared<RT::Graph<Passive_t>>();
 
-  constexpr int N = 10;
-  std::vector<Rec_t> A_data(N * N);
-  Eigen::Map<Eigen::Matrix<Rec_t, N, N>> A(A_data.data(), N, N);
-  A = Eigen::MatrixX<Passive_t>::Random(N, N);
+  constexpr int N         = 10;
+  Eigen::MatrixX<Rec_t> A = Eigen::MatrixX<Passive_t>::Random(N, N);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       RT::register_variable(A(i, j), graph);
@@ -56,12 +54,16 @@ auto main() -> int {
     }
   }
 
-  std::vector<Rec_t> b_data(N);
-  Eigen::Map<Eigen::Vector<Rec_t, N>> b(b_data.data(), N);
-  b = Eigen::VectorX<Rec_t>::Random(N);
+  Eigen::VectorX<Rec_t> b = Eigen::VectorX<Rec_t>::Random(N);
   RT::register_variable(b, graph);
   for (int i = 0; i < N; ++i) {
     RT::add_name(b(i), std::format("b({0})", i));
+  }
+
+  Eigen::VectorX<Rec_t> x = gaussian_elimination(A, b);
+  RT::mark_output(x);
+  for (int i = 0; i < N; ++i) {
+    RT::add_name(x(i), std::format("x({0})", i));
   }
 
   if constexpr (N <= 10) {
@@ -79,17 +81,7 @@ auto main() -> int {
       std::cout << b(i) << '\n';
     }
     std::cout << '\n';
-  }
 
-  std::vector<Rec_t> x_data(N);
-  Eigen::Map<Eigen::Vector<Rec_t, N>> x(x_data.data(), N);
-  gaussian_elimination(A, b, x);
-  RT::mark_output(x);
-  for (int i = 0; i < N; ++i) {
-    RT::add_name(x(i), std::format("x({0})", i));
-  }
-
-  if constexpr (N <= 10) {
     std::cout << "x =\n";
     for (int i = 0; i < N; ++i) {
       std::cout << x(i) << '\n';
