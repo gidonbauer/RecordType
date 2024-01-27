@@ -13,10 +13,16 @@ auto main() -> int {
   Eigen::VectorX<Type> vec2 = Eigen::VectorX<Type>::Constant(n, 2.0);
 
   auto graph = std::make_shared<RT::Graph<double>>();
-  std::for_each(std::begin(vec1), std::end(vec1), [&](auto& e) { e.register_graph(graph); });
-  std::for_each(std::begin(vec2), std::end(vec2), [&](auto& e) { e.register_graph(graph); });
+  RT::register_variable(vec1, graph);
+  RT::register_variable(vec2, graph);
+  for (Eigen::Index i = 0; i < n; ++i) {
+    RT::add_name(vec1(i), "vec1[" + std::to_string(i) + "]");
+    RT::add_name(vec2(i), "vec2[" + std::to_string(i) + "]");
+  }
 
-  [[maybe_unused]] Type res = vec1.dot(vec2);
+  Type res = vec1.dot(vec2);
+  RT::mark_output(res);
+  RT::add_name(res, "res");
 
   save_to_dot(__FILE__, graph.get());
 }

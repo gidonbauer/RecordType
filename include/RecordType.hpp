@@ -152,8 +152,7 @@ class RecordType {
 
   // Mark variable as output
   constexpr void add_name(const std::string& name) const noexcept {
-    RT_ASSERT(m_graph,
-              "Variable is not registered in a graph and can not be marked as an output variable.");
+    RT_ASSERT(m_graph, "Variable is not registered in a graph and no name can be assiged.");
     m_graph->add_name(m_id, name);
   }
 
