@@ -3,11 +3,9 @@
 
 #include <fstream>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "Graph.hpp"
-#include "IteratorReverser.hpp"
 #include "Macros.hpp"
 
 namespace RT {

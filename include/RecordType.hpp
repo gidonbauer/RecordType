@@ -2,7 +2,6 @@
 #define RT_RECORD_TYPE_HPP_
 
 #include <algorithm>
-#include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <utility>
@@ -12,10 +11,13 @@
 
 #include "Definitions.hpp"
 #include "Graph.hpp"
-#include "Helper.hpp"
 #include "Macros.hpp"
 #include "NodeType.hpp"
 #include "TypeTraits.hpp"
+
+#ifdef RT_DEBUG_CTOR_CALL
+#include "Helper.hpp"
+#endif  // RT_DEBUG_CTOR_CALL
 
 namespace RT {
 
