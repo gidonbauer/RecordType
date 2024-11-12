@@ -2,6 +2,7 @@
 
 #include "RecordType.hpp"
 #include "TypeTraits.hpp"
+#include "Helper.hpp"
 
 #define EXPECT_NOT_RECORD_TYPE(T)                                                                  \
   EXPECT_FALSE(RT::is_record_type_v<T>)                                                            \
